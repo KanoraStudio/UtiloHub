@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>UtiloHub 2.0</title>
+  <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+
+<!-- Splash Screen -->
+<div id="splash">
+  <div class="splash-logo">🖥</div>
+  <div class="splash-title">UTILOHUB</div>
+  <div class="splash-bar"><div class="splash-progress"></div></div>
+  <div style="font-size:12px;color:rgba(255,255,255,0.3);margin-top:8px;font-family:'JetBrains Mono',monospace">v2.0 loading...</div>
+</div>
+
+<!-- Login Screen -->
+<div id="login-screen" style="display:none">
+  <div id="particles-login"></div>
+  <div class="login-card">
+    <div style="text-align:center;margin-bottom:28px">
+      <div style="font-size:48px;margin-bottom:8px;animation:splashBounce 0.6s cubic-bezier(0.34,1.56,0.64,1)">🖥</div>
+      <h1 style="font-size:24px;font-weight:800;letter-spacing:4px;background:linear-gradient(135deg,#a78bfa,#60a5fa,#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">UTILOHUB</h1>
+      <p style="font-size:12px;color:rgba(255,255,255,0.35);margin-top:4px;letter-spacing:2px">YOUR PERSONAL WEB OS</p>
+    </div>
+
+    <div id="auth-error" style="display:none;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:10px 14px;font-size:12px;color:#f87171;margin-bottom:12px"></div>
+
+    <form id="auth-form" onsubmit="authSubmit(event)">
+      <input type="email" id="auth-email" class="input" style="width:100%;padding:12px 16px;font-size:14px;margin-bottom:10px" placeholder="メールアドレス" required>
+      <input type="password" id="auth-password" class="input" style="width:100%;padding:12px 16px;font-size:14px;margin-bottom:16px" placeholder="パスワード" required>
+      <button type="submit" class="btn btn-primary" style="width:100%;padding:12px;font-size:14px" id="auth-submit-btn">ログイン</button>
+    </form>
+
+    <button class="btn" style="width:100%;padding:12px;font-size:14px;margin-top:10px;background:white;color:#111;font-weight:700;border-radius:8px" onclick="authGoogle()">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:18px;height:18px;vertical-align:middle;margin-right:8px">Googleでログイン
+    </button>
+
+    <button class="btn btn-ghost" style="width:100%;padding:12px;font-size:14px;margin-top:8px" onclick="authGuest()">
+      👤 ゲストとして続ける
+    </button>
+
+    <p style="text-align:center;font-size:12px;color:rgba(255,255,255,0.3);margin-top:16px">
+      <span id="auth-toggle-text">アカウントがない？</span>
+      <button onclick="authToggleMode()" style="background:none;border:none;color:#a78bfa;cursor:pointer;font-size:12px;padding:0;margin-left:4px" id="auth-toggle-btn">新規登録</button>
+    </p>
+  </div>
+</div>
+
+<!-- Desktop -->
+<div id="app" style="display:none;width:100vw;height:100vh;position:relative">
+  <div id="wallpaper"></div>
+  <canvas id="particle-canvas" style="position:fixed;inset:0;pointer-events:none;z-index:1"></canvas>
+
+  <!-- Taskbar -->
+  <div id="taskbar">
+    <div class="taskbar-logo">🖥 UTILOHUB</div>
+    <div style="flex:1;display:flex;gap:4px;overflow:hidden" id="taskbar-windows"></div>
+    <div id="taskbar-user" style="font-size:11px;color:rgba(255,255,255,0.4)"></div>
+    <div class="taskbar-clock" id="taskbar-clock"></div>
+    <button class="btn btn-ghost" style="padding:4px 10px;font-size:11px" onclick="authLogout()">⏏ ログアウト</button>
+  </div>
+
+  <!-- Desktop Icons -->
+  <div id="desktop-icons" style="position:absolute;top:56px;left:16px;display:flex;flex-direction:column;gap:12px;z-index:10">
+    <div onclick="openNotepad()" style="cursor:pointer;text-align:center;width:64px">
+      <div style="font-size:32px;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.5))">📝</div>
+      <div style="font-size:10px;color:rgba(255,255,255,0.7);margin-top:2px;text-shadow:0 1px 4px rgba(0,0,0,0.8)">メモ帳</div>
+    </div>
+    <div onclick="openTasks()" style="cursor:pointer;text-align:center;width:64px">
+      <div style="font-size:32px;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.5))">✅</div>
+      <div style="font-size:10px;color:rgba(255,255,255,0.7);margin-top:2px;text-shadow:0 1px 4px rgba(0,0,0,0.8)">タスク</div>
+    </div>
+  </div>
+
+  <!-- Windows container -->
+  <div id="desktop" style="position:absolute;inset:0;pointer-events:none;z-index:100"></div>
+  <div id="desktop" style="position:absolute;inset:0;z-index:100"></div>
+
+  <!-- Dock -->
+  <div id="dock">
+    <div class="dock-icon" onclick="openNotepad()"><div class="emoji">📝</div><div class="dock-tooltip">メモ帳</div><div class="dock-dot" id="dot-notepad" style="display:none"></div></div>
+    <div class="dock-icon" onclick="openTasks()"><div class="emoji">✅</div><div class="dock-tooltip">タスク管理</div><div class="dock-dot" id="dot-tasks" style="display:none"></div></div>
+    <div class="dock-icon" onclick="openCalendar()"><div class="emoji">📅</div><div class="dock-tooltip">カレンダー</div><div class="dock-dot" id="dot-calendar" style="display:none"></div></div>
+    <div class="dock-icon" onclick="openMusic()"><div class="emoji">🎵</div><div class="dock-tooltip">音楽</div><div class="dock-dot" id="dot-music" style="display:none"></div></div>
+    <div class="dock-icon" onclick="openClock()"><div class="emoji">🕐</div><div class="dock-tooltip">時計</div><div class="dock-dot" id="dot-clock" style="display:none"></div></div>
+    <div class="dock-icon" onclick="openCalculator()"><div class="emoji">🧮</div><div class="dock-tooltip">電卓</div><div class="dock-dot" id="dot-calculator" style="display:none"></div></div>
+    <div class="dock-icon" onclick="openWeather()"><div class="emoji">🌤</div><div class="dock-tooltip">天気</div><div class="dock-dot" id="dot-weather" style="display:none"></div></div>
+    <div class="dock-icon" onclick="openPomodoro()"><div class="emoji">🍅</div><div class="dock-tooltip">ポモドーロ</div><div class="dock-dot" id="dot-pomodoro" style="display:none"></div></div>
+    <div class="dock-icon" onclick="openPaint()"><div class="emoji">🎨</div><div class="dock-tooltip">ペイント</div><div class="dock-dot" id="dot-paint" style="display:none"></div></div>
+    <div class="dock-icon" onclick="openSnake()"><div class="emoji">🐍</div><div class="dock-tooltip">スネーク</div><div class="dock-dot" id="dot-snake" style="display:none"></div></div>
+    <div class="dock-icon" onclick="openTerminal()"><div class="emoji">💻</div><div class="dock-tooltip">ターミナル</div><div class="dock-dot" id="dot-terminal" style="display:none"></div></div>
+    <div class="dock-icon" onclick="openFiles()"><div class="emoji">📁</div><div class="dock-tooltip">ファイル</div><div class="dock-dot" id="dot-files" style="display:none"></div></div>
+  </div>
+</div>
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const fbApp = initializeApp({
+  apiKey:"AIzaSyDuIsgk2lvwUdm8ENLeqUb2ORA3ssSyHLw",
+  authDomain:"utilohub.firebaseapp.com",projectId:"utilohub",
+  storageBucket:"utilohub.firebasestorage.app",
+  messagingSenderId:"350566624079",
+  appId:"1:350566624079:web:b0e86c81d0361b330e733a"
+});
+const auth = getAuth(fbApp);
+const errMsgs={"auth/user-not-found":"ユーザーが見つかりません","auth/wrong-password":"パスワードが違います","auth/email-already-in-use":"このメールは既に使用中","auth/weak-password":"パスワードは6文字以上","auth/invalid-credential":"メールまたはパスワードが違います"};
+
+let authMode='login';
+window.authToggleMode=()=>{
+  authMode=authMode==='login'?'signup':'login';
+  document.getElementById('auth-submit-btn').textContent=authMode==='login'?'ログイン':'アカウント作成';
+  document.getElementById('auth-toggle-text').textContent=authMode==='login'?'アカウントがない？':'すでにアカウントがある？';
+  document.getElementById('auth-toggle-btn').textContent=authMode==='login'?'新規登録':'ログイン';
+};
+window.authSubmit=async e=>{
+  e.preventDefault();
+  const em=document.getElementById('auth-email').value,pw=document.getElementById('auth-password').value;
+  const err=document.getElementById('auth-error');
+  try{
+    if(authMode==='login') await signInWithEmailAndPassword(auth,em,pw);
+    else await createUserWithEmailAndPassword(auth,em,pw);
+    err.style.display='none';
+  }catch(e2){err.textContent=errMsgs[e2.code]||e2.message;err.style.display='block';}
+};
+window.authGoogle=async()=>{try{await signInWithPopup(auth,new GoogleAuthProvider());}catch(e){console.error(e);}};
+window.authGuest=async()=>{try{await signInAnonymously(auth);}catch(e){console.error(e);}};
+window.authLogout=()=>signOut(auth);
+
+onAuthStateChanged(auth,user=>{
+  if(user){
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('app').style.display='block';
+    const u=document.getElementById('taskbar-user');
+    if(u)u.textContent=user.isAnonymous?'👤 ゲスト':user.email;
+    window.UH?.notify(`ようこそ ${user.isAnonymous?'ゲスト':user.email.split('@')[0]}！`,'🖥','#6366f1');
+  } else {
+    document.getElementById('login-screen').style.display='flex';
+    document.getElementById('app').style.display='none';
+  }
+});
+</script>
+
+<!-- Core -->
+<script type="module" src="js/core.js"></script>
+<!-- Apps -->
+<script type="module" src="apps/notepad.js"></script>
+<script type="module" src="apps/music.js"></script>
+<script type="module" src="apps/tools.js"></script>
+<script type="module" src="apps/productivity.js"></script>
+
+<script type="module">
+// ── Particles ──
+function initParticles(){
+  const canvas=document.getElementById('particle-canvas');if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  canvas.width=window.innerWidth;canvas.height=window.innerHeight;
+  const particles=[];
+  for(let i=0;i<60;i++){
+    particles.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:Math.random()*2+0.5,vx:(Math.random()-0.5)*0.4,vy:(Math.random()-0.5)*0.4,opacity:Math.random()*0.5+0.1,color:`hsl(${200+Math.random()*100},70%,60%)`});
+  }
+  const draw=()=>{
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    particles.forEach(p=>{
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0||p.x>canvas.width)p.vx*=-1;
+      if(p.y<0||p.y>canvas.height)p.vy*=-1;
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=p.color;ctx.globalAlpha=p.opacity;ctx.fill();
+    });
+    // Connect nearby
+    ctx.globalAlpha=0.08;
+    ctx.strokeStyle='rgba(167,139,250,1)';ctx.lineWidth=0.5;
+    for(let i=0;i<particles.length;i++)for(let j=i+1;j<particles.length;j++){
+      const dx=particles[i].x-particles[j].x,dy=particles[i].y-particles[j].y;
+      if(Math.sqrt(dx*dx+dy*dy)<120){ctx.beginPath();ctx.moveTo(particles[i].x,particles[i].y);ctx.lineTo(particles[j].x,particles[j].y);ctx.stroke();}
+    }
+    ctx.globalAlpha=1;
+    requestAnimationFrame(draw);
+  };
+  draw();
+  window.addEventListener('resize',()=>{canvas.width=window.innerWidth;canvas.height=window.innerHeight;});
+}
+initParticles();
+
+// ── Taskbar clock ──
+setInterval(()=>{
+  const c=document.getElementById('taskbar-clock');
+  if(c)c.textContent=new Date().toLocaleTimeString('ja-JP');
+},1000);
+
+// Remove splash after 3s
+setTimeout(()=>{
+  const s=document.getElementById('splash');
+  if(s)s.remove();
+  document.getElementById('login-screen').style.display='flex';
+},3000);
+</script>
+
+</body>
+</html>
