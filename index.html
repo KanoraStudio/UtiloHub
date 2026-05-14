@@ -6,52 +6,136 @@
   <title>UtiloHub</title>
   <link rel="stylesheet" href="css/animations.css">
   <style>
-    .file-item { display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:8px;cursor:pointer;transition:background 0.12s;color:rgba(255,255,255,0.8);font-size:13px; }
-    .file-item:hover { background:rgba(255,255,255,0.07); }
-    .file-item.selected { background:rgba(0,122,255,0.25); color:white; }
+    .file-item{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:8px;cursor:pointer;transition:background .12s;color:rgba(255,255,255,.8);font-size:13px}
+    .file-item:hover{background:rgba(255,255,255,.07)}
+    .file-item.selected{background:rgba(0,122,255,.25);color:#fff}
 
-    /* ── Apple Boot Screen ── */
-    #boot-screen {
-      position:fixed; inset:0; z-index:999999;
-      background:#000;
-      display:flex; flex-direction:column; align-items:center; justify-content:center;
-    }
-    .boot-apple {
-      width:64px; height:64px; margin-bottom:0;
-      animation: bootFadeIn 0.6s ease 0.2s both;
-    }
-    @keyframes bootFadeIn { from{opacity:0} to{opacity:1} }
-    .boot-bar-wrap {
-      position:absolute; bottom:15%;
-      width:200px; height:4px;
-      background:rgba(255,255,255,0.15);
-      border-radius:2px; overflow:hidden;
-      animation: bootFadeIn 0.4s ease 0.5s both;
-    }
-    .boot-bar-fill {
-      height:100%; width:0%;
-      background:rgba(255,255,255,0.8);
-      border-radius:2px;
-      transition: width 0.12s linear;
-    }
+    /* ── Boot ── */
+    #boot-screen{position:fixed;inset:0;z-index:999999;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center}
+    .boot-apple{width:64px;height:64px;animation:bootFade .6s ease .2s both}
+    @keyframes bootFade{from{opacity:0}to{opacity:1}}
+    .boot-bar-wrap{position:absolute;bottom:15%;width:200px;height:4px;background:rgba(255,255,255,.15);border-radius:2px;overflow:hidden;animation:bootFade .4s ease .5s both}
+    .boot-bar-fill{height:100%;width:0%;background:rgba(255,255,255,.85);border-radius:2px;transition:width .1s linear}
+
+    /* ── VM Screen ── */
+    #vm-screen{position:fixed;inset:0;z-index:99998;background:#1a1a1a;display:none;flex-direction:column;align-items:center;justify-content:center;gap:0;font-family:'JetBrains Mono',monospace}
+    .vm-titlebar{position:absolute;top:0;left:0;right:0;height:28px;background:#2a2a2a;display:flex;align-items:center;padding:0 14px;gap:8px;border-bottom:1px solid #3a3a3a}
+    .vm-tl{width:12px;height:12px;border-radius:50%}
+    .vm-logo{width:52px;height:52px;margin-bottom:20px}
+    .vm-title{font-size:20px;color:rgba(255,255,255,.9);font-weight:300;font-family:'Inter',-apple-system,sans-serif;margin-bottom:6px}
+    .vm-sub{font-size:13px;color:rgba(255,255,255,.4);font-family:'Inter',-apple-system,sans-serif;margin-bottom:32px}
+    .vm-log{width:480px;height:120px;overflow:hidden;font-size:11px;color:#30d158;line-height:1.7;text-align:left;margin-bottom:28px}
+    .vm-bar-wrap{width:320px;height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden}
+    .vm-bar-fill{height:100%;width:0%;border-radius:3px;transition:width .15s ease}
+    .vm-pct{font-size:12px;color:rgba(255,255,255,.4);margin-top:10px;font-family:'Inter',sans-serif}
+
+    /* ── OS Selector ── */
+    #os-select{position:fixed;inset:0;z-index:99997;background:#000;display:none;flex-direction:column;align-items:center;justify-content:center;gap:40px}
+    .os-title{font-size:32px;font-weight:300;color:white;letter-spacing:-0.5px}
+    .os-subtitle{font-size:15px;color:rgba(255,255,255,.4);margin-top:-32px}
+    .os-cards{display:flex;gap:24px}
+    .os-card{width:220px;padding:32px 24px;border-radius:20px;cursor:pointer;border:2px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);backdrop-filter:blur(20px);text-align:center;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:14px}
+    .os-card:hover{border-color:rgba(255,255,255,.35);background:rgba(255,255,255,.1);transform:translateY(-4px)}
+    .os-card.selected{border-color:#0071e3;background:rgba(0,113,227,.15)}
+    .os-card-icon{font-size:56px;line-height:1}
+    .os-card-name{font-size:18px;font-weight:600;color:white}
+    .os-card-desc{font-size:12px;color:rgba(255,255,255,.4);line-height:1.6}
+    .os-start-btn{background:#0071e3;color:white;border:none;border-radius:12px;padding:14px 48px;font-size:16px;font-weight:600;cursor:pointer;font-family:-apple-system,'Inter',sans-serif;transition:all .15s;display:none}
+    .os-start-btn:hover{background:#0077ed;transform:scale(1.02)}
+    .os-start-btn.show{display:block}
+
+    /* ── Windows VM Desktop ── */
+    #win-vm{position:fixed;inset:0;z-index:500;display:none;flex-direction:column;background:#008080}
+    .win-taskbar{position:absolute;bottom:0;left:0;right:0;height:40px;background:linear-gradient(to bottom,#c0c0c0,#a0a0a0);border-top:2px solid #fff;display:flex;align-items:center;padding:0 4px;gap:4px}
+    .win-start-btn{background:linear-gradient(to bottom,#d4d4d4,#a8a8a8);border:2px outset #fff;padding:4px 12px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:'Segoe UI',sans-serif}
+    .win-taskbar-clock{margin-left:auto;background:rgba(0,0,0,.15);padding:4px 10px;font-size:12px;border:1px inset #888;font-family:'Segoe UI',sans-serif}
+    .win-desktop-icons{position:absolute;top:16px;left:16px;display:flex;flex-direction:column;gap:20px}
+    .win-icon{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:6px;border-radius:4px;transition:background .1s}
+    .win-icon:hover{background:rgba(255,255,255,.2)}
+    .win-icon span:first-child{font-size:36px}
+    .win-icon span:last-child{font-size:11px;color:white;text-shadow:1px 1px 2px #000;font-family:'Segoe UI',sans-serif;text-align:center}
+    .win-close-btn{position:absolute;top:8px;right:12px;background:#0071e3;color:white;border:none;border-radius:8px;padding:6px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:-apple-system,sans-serif}
   </style>
 </head>
 <body>
 
-<!-- ════════ BOOT SCREEN (Apple logo + progress bar) ════════ -->
+<!-- ══ BOOT ══ -->
 <div id="boot-screen">
-  <!-- Apple SVG logo (white) -->
-  <svg class="boot-apple" viewBox="0 0 814 1000" fill="white" xmlns="http://www.w3.org/2000/svg">
+  <svg class="boot-apple" viewBox="0 0 814 1000" fill="white">
     <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105.2-57.8-155.5-127.4C46 424.8 0 301.9 0 185.4c0-127.6 65.1-195.3 196.4-195.3 74.9 0 128.9 38.4 171.5 38.4 40.8 0 107.6-40.8 191.6-40.8 30.2 0 110.6 2.6 168.3 89.3zm-171.7-109.9c-37.9-44.9-94.1-77.4-148.2-77.4-7.1 0-14.2.6-21.3 1.9 2.6 36.2 18.8 71.3 41.9 96.8 37.9 44.3 96.8 77.4 152.3 77.4 6.4 0 12.8-.6 19.2-1.9-2.6-38.4-21.3-73.5-43.9-96.8z"/>
   </svg>
-  <div class="boot-bar-wrap">
-    <div class="boot-bar-fill" id="boot-progress"></div>
-  </div>
+  <div class="boot-bar-wrap"><div class="boot-bar-fill" id="boot-progress"></div></div>
 </div>
 
-<!-- ════════ SETUP WIZARD ════════ -->
+<!-- ══ OS SELECTOR ══ -->
+<div id="os-select">
+  <div class="os-title">仮想マシンの作成</div>
+  <div class="os-subtitle">起動するオペレーティングシステムを選択してください</div>
+  <div class="os-cards">
+    <div class="os-card" id="os-mac" onclick="selectOS('mac')">
+      <div class="os-card-icon">
+        <svg width="56" height="56" viewBox="0 0 814 1000" fill="white">
+          <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105.2-57.8-155.5-127.4C46 424.8 0 301.9 0 185.4c0-127.6 65.1-195.3 196.4-195.3 74.9 0 128.9 38.4 171.5 38.4 40.8 0 107.6-40.8 191.6-40.8 30.2 0 110.6 2.6 168.3 89.3zm-171.7-109.9c-37.9-44.9-94.1-77.4-148.2-77.4-7.1 0-14.2.6-21.3 1.9 2.6 36.2 18.8 71.3 41.9 96.8 37.9 44.3 96.8 77.4 152.3 77.4 6.4 0 12.8-.6 19.2-1.9-2.6-38.4-21.3-73.5-43.9-96.8z"/>
+        </svg>
+      </div>
+      <div class="os-card-name">macOS</div>
+      <div class="os-card-desc">UtiloHub macOS<br>Ventura風デザイン</div>
+    </div>
+    <div class="os-card" id="os-win" onclick="selectOS('win')">
+      <div class="os-card-icon">
+        <svg width="56" height="56" viewBox="0 0 88 88" fill="none">
+          <rect x="2" y="2" width="38" height="38" fill="#F25022"/>
+          <rect x="48" y="2" width="38" height="38" fill="#7FBA00"/>
+          <rect x="2" y="48" width="38" height="38" fill="#00A4EF"/>
+          <rect x="48" y="48" width="38" height="38" fill="#FFB900"/>
+        </svg>
+      </div>
+      <div class="os-card-name">Windows</div>
+      <div class="os-card-desc">Windows 95風<br>クラシックデスクトップ</div>
+    </div>
+  </div>
+  <button class="os-start-btn" id="os-start-btn" onclick="startVM()">仮想マシンを起動 →</button>
+</div>
+
+<!-- ══ VM BOOT ANIMATION ══ -->
+<div id="vm-screen">
+  <div class="vm-titlebar">
+    <div class="vm-tl" style="background:#ff5f57"></div>
+    <div class="vm-tl" style="background:#febc2e"></div>
+    <div class="vm-tl" style="background:#28c840"></div>
+    <span style="font-size:12px;color:rgba(255,255,255,.5);margin-left:8px" id="vm-titlebar-text">UtiloHub — 仮想マシン起動中</span>
+  </div>
+  <div id="vm-os-icon" style="margin-bottom:20px"></div>
+  <div class="vm-title" id="vm-title-text">仮想マシンを起動しています</div>
+  <div class="vm-sub"  id="vm-sub-text">しばらくお待ちください...</div>
+  <div class="vm-log"  id="vm-log"></div>
+  <div class="vm-bar-wrap"><div class="vm-bar-fill" id="vm-progress"></div></div>
+  <div class="vm-pct"  id="vm-pct">0%</div>
+</div>
+
+<!-- ══ WINDOWS VM DESKTOP ══ -->
+<div id="win-vm">
+  <div style="position:absolute;inset:0;background:linear-gradient(135deg,#008080,#006060)"></div>
+  <div class="win-desktop-icons">
+    <div class="win-icon" ondblclick="alert('マイコンピュータ')"><span>🖥️</span><span>マイコンピュータ</span></div>
+    <div class="win-icon" ondblclick="alert('ごみ箱')"><span>🗑️</span><span>ごみ箱</span></div>
+    <div class="win-icon" ondblclick="alert('Internet Explorer')"><span>🌐</span><span>Internet Explorer</span></div>
+    <div class="win-icon" ondblclick="winNotepad()"><span>📄</span><span>メモ帳</span></div>
+  </div>
+  <div class="win-taskbar">
+    <button class="win-start-btn" onclick="winStartMenu()">
+      <svg width="16" height="16" viewBox="0 0 88 88"><rect x="2" y="2" width="38" height="38" fill="#F25022"/><rect x="48" y="2" width="38" height="38" fill="#7FBA00"/><rect x="2" y="48" width="38" height="38" fill="#00A4EF"/><rect x="48" y="48" width="38" height="38" fill="#FFB900"/></svg>
+      スタート
+    </button>
+    <div id="win-taskbar-items" style="display:flex;gap:4px;flex:1;padding:0 4px"></div>
+    <div class="win-taskbar-clock" id="win-clock"></div>
+  </div>
+  <button class="win-close-btn" onclick="closeWinVM()">← UtiloHubに戻る</button>
+  <div id="win-desktop-area" style="position:absolute;inset:40px 0 40px 0"></div>
+</div>
+
+<!-- ══ SETUP WIZARD ══ -->
 <div id="setup-screen" style="display:none">
-  <!-- Slide 0: Welcome Globe -->
   <div class="setup-slide active" id="setup-0">
     <div class="setup-bg-globe"></div>
     <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:0">
@@ -61,116 +145,71 @@
       <button class="setup-btn" style="margin-top:40px;padding:14px 48px;font-size:17px" onclick="setupNext()">はじめる →</button>
     </div>
   </div>
-
-  <!-- Slide 1: Language -->
   <div class="setup-slide" id="setup-1">
     <div class="setup-bg-globe"></div>
     <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:32px">
-      <div style="text-align:center">
-        <div class="setup-title">言語と地域</div>
-        <div class="setup-subtitle">ご利用の言語と地域を選択してください</div>
-      </div>
+      <div style="text-align:center"><div class="setup-title">言語と地域</div><div class="setup-subtitle">ご利用の言語と地域を選択してください</div></div>
       <div class="setup-form-card" style="width:380px">
         <div style="margin-bottom:16px">
-          <label style="font-size:13px;color:rgba(255,255,255,0.5);display:block;margin-bottom:6px">言語</label>
+          <label style="font-size:13px;color:rgba(255,255,255,.5);display:block;margin-bottom:6px">言語</label>
           <select id="setup-lang" class="setup-input" style="cursor:pointer">
-            <option value="ja" selected>🇯🇵 日本語</option>
-            <option value="en">🇺🇸 English</option>
-            <option value="zh">🇨🇳 中文</option>
-            <option value="ko">🇰🇷 한국어</option>
+            <option value="ja" selected>🇯🇵 日本語</option><option value="en">🇺🇸 English</option><option value="zh">🇨🇳 中文</option><option value="ko">🇰🇷 한국어</option>
           </select>
         </div>
         <div>
-          <label style="font-size:13px;color:rgba(255,255,255,0.5);display:block;margin-bottom:6px">タイムゾーン</label>
+          <label style="font-size:13px;color:rgba(255,255,255,.5);display:block;margin-bottom:6px">タイムゾーン</label>
           <select id="setup-tz" class="setup-input" style="cursor:pointer">
-            <option value="Asia/Tokyo" selected>🗾 Asia/Tokyo (JST +9)</option>
-            <option value="America/New_York">🗽 America/New_York (EST -5)</option>
-            <option value="Europe/London">🇬🇧 Europe/London (GMT 0)</option>
-            <option value="America/Los_Angeles">🌉 America/Los_Angeles (PST -8)</option>
+            <option value="Asia/Tokyo" selected>🗾 Asia/Tokyo (JST +9)</option><option value="America/New_York">🗽 New York (EST)</option><option value="Europe/London">🇬🇧 London (GMT)</option>
           </select>
         </div>
       </div>
-      <div style="display:flex;gap:12px">
-        <button class="setup-btn secondary" onclick="setupPrev()">← 戻る</button>
-        <button class="setup-btn" onclick="setupNext()">続ける →</button>
-      </div>
+      <div style="display:flex;gap:12px"><button class="setup-btn secondary" onclick="setupPrev()">← 戻る</button><button class="setup-btn" onclick="setupNext()">続ける →</button></div>
     </div>
   </div>
-
-  <!-- Slide 2: Name + Avatar -->
   <div class="setup-slide" id="setup-2">
     <div class="setup-bg-globe"></div>
     <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:32px">
-      <div style="text-align:center">
-        <div class="setup-title">アカウント設定</div>
-        <div class="setup-subtitle">あなたのプロフィールを設定します</div>
-      </div>
+      <div style="text-align:center"><div class="setup-title">アカウント設定</div><div class="setup-subtitle">あなたのプロフィールを設定します</div></div>
       <div class="setup-form-card">
         <div style="margin-bottom:20px">
-          <label style="font-size:13px;color:rgba(255,255,255,0.5);display:block;margin-bottom:6px">あなたの名前</label>
+          <label style="font-size:13px;color:rgba(255,255,255,.5);display:block;margin-bottom:6px">あなたの名前</label>
           <input id="setup-name" class="setup-input" placeholder="例: 田中 太郎" maxlength="20">
         </div>
         <div>
-          <label style="font-size:13px;color:rgba(255,255,255,0.5);display:block;margin-bottom:10px">アバター</label>
-          <div class="setup-avatar-grid" id="avatar-grid">
-            <!-- filled by JS -->
-          </div>
+          <label style="font-size:13px;color:rgba(255,255,255,.5);display:block;margin-bottom:10px">アバター</label>
+          <div class="setup-avatar-grid" id="avatar-grid"></div>
         </div>
       </div>
-      <div style="display:flex;gap:12px">
-        <button class="setup-btn secondary" onclick="setupPrev()">← 戻る</button>
-        <button class="setup-btn" onclick="setupNext()">続ける →</button>
-      </div>
+      <div style="display:flex;gap:12px"><button class="setup-btn secondary" onclick="setupPrev()">← 戻る</button><button class="setup-btn" onclick="setupNext()">続ける →</button></div>
     </div>
   </div>
-
-  <!-- Slide 3: Wallpaper -->
   <div class="setup-slide" id="setup-3">
     <div class="setup-bg-globe"></div>
     <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:32px">
-      <div style="text-align:center">
-        <div class="setup-title">壁紙を選ぶ</div>
-        <div class="setup-subtitle">デスクトップの壁紙を選択してください</div>
-      </div>
-      <div class="setup-form-card" style="width:460px">
-        <div class="setup-wallpaper-grid" id="wallpaper-grid">
-          <!-- filled by JS -->
-        </div>
-      </div>
-      <div style="display:flex;gap:12px">
-        <button class="setup-btn secondary" onclick="setupPrev()">← 戻る</button>
-        <button class="setup-btn" onclick="setupNext()">続ける →</button>
-      </div>
+      <div style="text-align:center"><div class="setup-title">壁紙を選ぶ</div><div class="setup-subtitle">デスクトップの壁紙を選択してください</div></div>
+      <div class="setup-form-card" style="width:460px"><div class="setup-wallpaper-grid" id="wallpaper-grid"></div></div>
+      <div style="display:flex;gap:12px"><button class="setup-btn secondary" onclick="setupPrev()">← 戻る</button><button class="setup-btn" onclick="setupNext()">続ける →</button></div>
     </div>
   </div>
-
-  <!-- Slide 4: Auth -->
   <div class="setup-slide" id="setup-4">
     <div class="setup-bg-globe"></div>
     <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:32px">
-      <div style="text-align:center">
-        <div class="setup-title">サインイン</div>
-        <div class="setup-subtitle">アカウントでサインインするか、ゲストで続けてください</div>
-      </div>
+      <div style="text-align:center"><div class="setup-title">サインイン</div><div class="setup-subtitle">アカウントでサインインするか、ゲストで続けてください</div></div>
       <div class="setup-form-card" style="width:380px">
-        <div id="setup-auth-err" style="display:none;background:rgba(255,69,58,0.15);border:1px solid rgba(255,69,58,0.3);border-radius:8px;padding:10px;font-size:13px;color:#ff453a;margin-bottom:14px"></div>
+        <div id="setup-auth-err" style="display:none;background:rgba(255,69,58,.15);border:1px solid rgba(255,69,58,.3);border-radius:8px;padding:10px;font-size:13px;color:#ff453a;margin-bottom:14px"></div>
         <form onsubmit="setupAuth(event)">
           <input type="email" id="setup-email" class="setup-input" placeholder="メールアドレス" style="margin-bottom:10px">
           <input type="password" id="setup-pw" class="setup-input" placeholder="パスワード" style="margin-bottom:16px">
           <button type="submit" class="setup-btn" style="width:100%;padding:12px">ログイン / 登録</button>
         </form>
-        <button onclick="setupGoogle()" style="width:100%;padding:12px;margin-top:10px;background:white;color:#111;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all 0.15s" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='white'">
+        <button onclick="setupGoogle()" style="width:100%;padding:12px;margin-top:10px;background:white;color:#111;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px">
           <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" height="20"> Googleでサインイン
         </button>
-        <button onclick="setupGuest()" style="width:100%;padding:12px;margin-top:8px;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.15);border-radius:10px;font-size:15px;cursor:pointer;transition:all 0.15s" onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
-          👤 ゲストとして続ける
-        </button>
+        <button onclick="setupGuest()" style="width:100%;padding:12px;margin-top:8px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.15);border-radius:10px;font-size:15px;cursor:pointer">👤 ゲストとして続ける</button>
       </div>
       <button class="setup-btn secondary" onclick="setupPrev()">← 戻る</button>
     </div>
   </div>
-
-  <!-- Slide 5: Done -->
   <div class="setup-slide" id="setup-5">
     <div style="background:radial-gradient(ellipse at center,#0a2a1a 0%,#000 70%);position:absolute;inset:0"></div>
     <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:24px">
@@ -183,324 +222,235 @@
   </div>
 </div>
 
-<!-- ════════ LOGIN SCREEN ════════ -->
+<!-- ══ LOGIN ══ -->
 <div id="login-screen" style="display:none;position:fixed;inset:0;z-index:10000;background:inherit;align-items:center;justify-content:center;flex-direction:column;gap:18px">
   <div id="ls-avatar" class="login-avatar-circle">😊</div>
   <div id="ls-name" class="login-name">UtiloHub</div>
   <input id="ls-pw" class="login-input" type="password" placeholder="パスワードを入力" onkeydown="if(event.key==='Enter')lsSubmit()">
   <div class="login-hint">パスワードを入力するかゲストとして続けてください</div>
   <button onclick="lsSubmit()" style="background:#0071e3;color:white;border:none;border-radius:10px;padding:10px 32px;font-size:15px;font-weight:600;cursor:pointer;margin-top:4px">ログイン</button>
-  <button onclick="setupGuest()" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:13px;cursor:pointer;margin-top:4px">ゲストとして続ける</button>
+  <button onclick="setupGuest()" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:13px;cursor:pointer;margin-top:4px">ゲストとして続ける</button>
 </div>
 
-<!-- ════════ DESKTOP ════════ -->
+<!-- ══ DESKTOP ══ -->
 <div id="app" style="display:none;width:100vw;height:100vh;position:relative">
   <div id="wallpaper" class="wp-0"></div>
   <canvas id="particle-canvas" style="position:fixed;inset:0;pointer-events:none;z-index:1"></canvas>
-
-  <!-- Menu Bar -->
   <div id="menubar">
     <div class="menubar-apple" onclick="window.openSettings&&openSettings()">🍎</div>
     <div class="menubar-item" style="font-weight:700">Finder</div>
     <div class="menubar-item">ファイル</div>
     <div class="menubar-item">編集</div>
-    <div class="menubar-item">表示</div>
     <div class="menubar-item" onclick="window.toggleSpotlight&&toggleSpotlight()">🔍 Spotlight</div>
     <div class="menubar-right">
       <div class="menubar-user" id="mb-user"></div>
       <div class="menubar-clock" id="mb-clock"></div>
-      <button onclick="authLogout()" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:12px;cursor:pointer;padding:2px 6px;border-radius:4px;transition:color 0.1s" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255,255,255,0.4)'">⏏</button>
+      <button onclick="authLogout()" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:12px;cursor:pointer;padding:2px 6px;border-radius:4px" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255,255,255,.4)'">⏏</button>
     </div>
   </div>
-
-  <!-- Spotlight -->
   <div id="spotlight">
     <div class="spotlight-card">
       <input id="spotlight-input" class="spotlight-input" placeholder="🔍 アプリを検索..." oninput="renderSpotlightResults(this.value)" onkeydown="if(event.key==='Escape')toggleSpotlight()">
       <div id="spotlight-results" class="spotlight-results"></div>
     </div>
   </div>
-
-  <!-- Desktop -->
   <div id="desktop" style="position:absolute;inset:0;z-index:100"></div>
-
-  <!-- Dock -->
   <div id="dock">
-    <div class="dock-icon" onclick="openNotepad()">
-      <div class="di-img" style="background:linear-gradient(145deg,#ffd60a,#ff9f0a);display:flex;align-items:center;justify-content:center;font-size:30px">📝</div>
-      <div class="dock-tooltip">メモ帳</div>
-      <div class="dock-dot" id="dot-notepad"></div>
-    </div>
-    <div class="dock-icon" onclick="openTasks()">
-      <div class="di-img" style="background:linear-gradient(145deg,#30d158,#25a244);display:flex;align-items:center;justify-content:center;font-size:30px">✅</div>
-      <div class="dock-tooltip">タスク管理</div>
-      <div class="dock-dot" id="dot-tasks"></div>
-    </div>
-    <div class="dock-icon" onclick="openCalendar()">
-      <div class="di-img" style="background:linear-gradient(145deg,#ff453a,#d70015);display:flex;align-items:center;justify-content:center;font-size:30px">📅</div>
-      <div class="dock-tooltip">カレンダー</div>
-      <div class="dock-dot" id="dot-calendar"></div>
-    </div>
-    <div class="dock-icon" onclick="openMusic()">
-      <div class="di-img" style="background:linear-gradient(145deg,#bf5af2,#9b30d9);display:flex;align-items:center;justify-content:center;font-size:30px">🎵</div>
-      <div class="dock-tooltip">音楽</div>
-      <div class="dock-dot" id="dot-music"></div>
-    </div>
-    <div class="dock-icon" onclick="openWeather()">
-      <div class="di-img" style="background:linear-gradient(145deg,#0071e3,#0051a8);display:flex;align-items:center;justify-content:center;font-size:30px">🌤</div>
-      <div class="dock-tooltip">天気</div>
-      <div class="dock-dot" id="dot-weather"></div>
-    </div>
+    <div class="dock-icon" onclick="openNotepad()"><div class="di-img" style="background:linear-gradient(145deg,#ffd60a,#ff9f0a);display:flex;align-items:center;justify-content:center;font-size:30px">📝</div><div class="dock-tooltip">メモ帳</div><div class="dock-dot" id="dot-notepad"></div></div>
+    <div class="dock-icon" onclick="openTasks()"><div class="di-img" style="background:linear-gradient(145deg,#30d158,#25a244);display:flex;align-items:center;justify-content:center;font-size:30px">✅</div><div class="dock-tooltip">タスク管理</div><div class="dock-dot" id="dot-tasks"></div></div>
+    <div class="dock-icon" onclick="openCalendar()"><div class="di-img" style="background:linear-gradient(145deg,#ff453a,#d70015);display:flex;align-items:center;justify-content:center;font-size:30px">📅</div><div class="dock-tooltip">カレンダー</div><div class="dock-dot" id="dot-calendar"></div></div>
+    <div class="dock-icon" onclick="openMusic()"><div class="di-img" style="background:linear-gradient(145deg,#bf5af2,#9b30d9);display:flex;align-items:center;justify-content:center;font-size:30px">🎵</div><div class="dock-tooltip">音楽</div><div class="dock-dot" id="dot-music"></div></div>
+    <div class="dock-icon" onclick="openSafari()"><div class="di-img" style="background:linear-gradient(145deg,#0071e3,#30c4ff);display:flex;align-items:center;justify-content:center;font-size:30px">🧭</div><div class="dock-tooltip">Safari</div><div class="dock-dot" id="dot-safari"></div></div>
+    <div class="dock-icon" onclick="openWeather()"><div class="di-img" style="background:linear-gradient(145deg,#32d2ff,#0071e3);display:flex;align-items:center;justify-content:center;font-size:30px">🌤</div><div class="dock-tooltip">天気</div><div class="dock-dot" id="dot-weather"></div></div>
     <div class="dock-sep"></div>
-    <div class="dock-icon" onclick="openClock()">
-      <div class="di-img" style="background:linear-gradient(145deg,#2c2c2e,#1c1c1e);border:1px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:30px">🕐</div>
-      <div class="dock-tooltip">時計</div>
-      <div class="dock-dot" id="dot-clock"></div>
-    </div>
-    <div class="dock-icon" onclick="openCalculator()">
-      <div class="di-img" style="background:linear-gradient(145deg,#3a3a3c,#2c2c2e);display:flex;align-items:center;justify-content:center;font-size:30px">🧮</div>
-      <div class="dock-tooltip">電卓</div>
-      <div class="dock-dot" id="dot-calculator"></div>
-    </div>
-    <div class="dock-icon" onclick="openPomodoro()">
-      <div class="di-img" style="background:linear-gradient(145deg,#ff453a,#c1121f);display:flex;align-items:center;justify-content:center;font-size:30px">🍅</div>
-      <div class="dock-tooltip">ポモドーロ</div>
-      <div class="dock-dot" id="dot-pomodoro"></div>
-    </div>
-    <div class="dock-icon" onclick="openPaint()">
-      <div class="di-img" style="background:linear-gradient(145deg,#ff9f0a,#d4760b);display:flex;align-items:center;justify-content:center;font-size:30px">🎨</div>
-      <div class="dock-tooltip">ペイント</div>
-      <div class="dock-dot" id="dot-paint"></div>
-    </div>
-    <div class="dock-icon" onclick="openSnake()">
-      <div class="di-img" style="background:linear-gradient(145deg,#30d158,#1a7a34);display:flex;align-items:center;justify-content:center;font-size:30px">🐍</div>
-      <div class="dock-tooltip">スネーク</div>
-      <div class="dock-dot" id="dot-snake"></div>
-    </div>
+    <div class="dock-icon" onclick="openClock()"><div class="di-img" style="background:linear-gradient(145deg,#2c2c2e,#1c1c1e);border:1px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:30px">🕐</div><div class="dock-tooltip">時計</div><div class="dock-dot" id="dot-clock"></div></div>
+    <div class="dock-icon" onclick="openCalculator()"><div class="di-img" style="background:linear-gradient(145deg,#3a3a3c,#2c2c2e);display:flex;align-items:center;justify-content:center;font-size:30px">🧮</div><div class="dock-tooltip">電卓</div><div class="dock-dot" id="dot-calculator"></div></div>
+    <div class="dock-icon" onclick="openPomodoro()"><div class="di-img" style="background:linear-gradient(145deg,#ff453a,#c1121f);display:flex;align-items:center;justify-content:center;font-size:30px">🍅</div><div class="dock-tooltip">ポモドーロ</div><div class="dock-dot" id="dot-pomodoro"></div></div>
+    <div class="dock-icon" onclick="openPaint()"><div class="di-img" style="background:linear-gradient(145deg,#ff9f0a,#d4760b);display:flex;align-items:center;justify-content:center;font-size:30px">🎨</div><div class="dock-tooltip">ペイント</div><div class="dock-dot" id="dot-paint"></div></div>
+    <div class="dock-icon" onclick="openSnake()"><div class="di-img" style="background:linear-gradient(145deg,#30d158,#1a7a34);display:flex;align-items:center;justify-content:center;font-size:30px">🐍</div><div class="dock-tooltip">スネーク</div><div class="dock-dot" id="dot-snake"></div></div>
     <div class="dock-sep"></div>
-    <div class="dock-icon" onclick="openTerminal()">
-      <div class="di-img" style="background:linear-gradient(145deg,#1c1c1e,#0d0d0d);border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:30px">💻</div>
-      <div class="dock-tooltip">ターミナル</div>
-      <div class="dock-dot" id="dot-terminal"></div>
-    </div>
-    <div class="dock-icon" onclick="openFiles()">
-      <div class="di-img" style="background:linear-gradient(145deg,#0071e3,#0051a8);display:flex;align-items:center;justify-content:center;font-size:30px">📁</div>
-      <div class="dock-tooltip">ファイル</div>
-      <div class="dock-dot" id="dot-files"></div>
-    </div>
-    <div class="dock-icon" onclick="openSettings()">
-      <div class="di-img" style="background:linear-gradient(145deg,#636366,#48484a);display:flex;align-items:center;justify-content:center;font-size:30px">⚙️</div>
-      <div class="dock-tooltip">設定</div>
-      <div class="dock-dot" id="dot-settings"></div>
-    </div>
+    <div class="dock-icon" onclick="openTerminal()"><div class="di-img" style="background:linear-gradient(145deg,#1c1c1e,#0d0d0d);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:30px">💻</div><div class="dock-tooltip">ターミナル</div><div class="dock-dot" id="dot-terminal"></div></div>
+    <div class="dock-icon" onclick="openFiles()"><div class="di-img" style="background:linear-gradient(145deg,#0071e3,#0051a8);display:flex;align-items:center;justify-content:center;font-size:30px">📁</div><div class="dock-tooltip">ファイル</div><div class="dock-dot" id="dot-files"></div></div>
+    <div class="dock-icon" onclick="launchVM()"><div class="di-img" style="background:linear-gradient(145deg,#ff9f0a,#e67e00);display:flex;align-items:center;justify-content:center;font-size:24px">⊞</div><div class="dock-tooltip">仮想マシン</div><div class="dock-dot" id="dot-vm"></div></div>
+    <div class="dock-icon" onclick="openSettings()"><div class="di-img" style="background:linear-gradient(145deg,#636366,#48484a);display:flex;align-items:center;justify-content:center;font-size:30px">⚙️</div><div class="dock-tooltip">設定</div><div class="dock-dot" id="dot-settings"></div></div>
   </div>
 </div>
 
-<!-- ════════ SCRIPTS ════════ -->
+<!-- ══ SCRIPTS ══ -->
 <script>
-// ── Boot screen progress ──
+// Boot progress
 (function(){
-  var prog = document.getElementById('boot-progress');
-  var pct  = 0;
-  var iv   = setInterval(function(){
-    var step = pct < 60 ? Math.random()*4+1 : pct < 85 ? Math.random()*2+0.5 : Math.random()*1+0.2;
-    pct = Math.min(pct + step, 98);
-    if(prog) prog.style.width = pct + '%';
-  }, 120);
-  window._bootIv = iv;
-  window._finishBoot = function(){
-    clearInterval(iv);
-    if(prog) prog.style.width = '100%';
+  var p=document.getElementById('boot-progress'),pct=0;
+  var iv=setInterval(function(){
+    var step=pct<60?Math.random()*4+1:pct<85?Math.random()*2+.5:Math.random()*.8+.1;
+    pct=Math.min(pct+step,98);
+    if(p)p.style.width=pct+'%';
+  },120);
+  window._bootIv=iv;
+  window._finishBoot=function(){
+    clearInterval(iv);if(p)p.style.width='100%';
     setTimeout(function(){
-      var bs = document.getElementById('boot-screen');
-      if(bs){ bs.style.transition='opacity 0.5s'; bs.style.opacity='0'; setTimeout(function(){ bs.style.display='none'; }, 500); }
-    }, 300);
+      var bs=document.getElementById('boot-screen');
+      if(bs){bs.style.transition='opacity .5s';bs.style.opacity='0';setTimeout(function(){bs.style.display='none';},500);}
+    },300);
   };
 })();
 
-// ── Avatar & Wallpaper grids (pure JS, no template literals in HTML) ──
+// Avatar & wallpaper grids
 (function(){
-  var avatars = ['😊','😎','🐱','🐶','🦊','🐼','🦁','🐯','🐻','🐰','🦄','🐸'];
-  var grid = document.getElementById('avatar-grid');
-  if(grid){
-    avatars.forEach(function(em, i){
-      var d = document.createElement('div');
-      d.className = 'setup-avatar' + (i===0?' chosen':'');
-      d.dataset.av = em;
-      d.textContent = em;
-      d.onclick = function(){
-        document.querySelectorAll('.setup-avatar').forEach(function(e){ e.classList.remove('chosen'); });
-        d.classList.add('chosen');
-        window._setupAv = d.dataset.av;
-      };
-      grid.appendChild(d);
-    });
-  }
-  window._setupAv = '😊';
-
-  var wallpapers = [
-    {cls:'wp-0', name:'ミッドナイト'},
-    {cls:'wp-1', name:'ディープパープル'},
-    {cls:'wp-2', name:'オーシャン'},
-    {cls:'wp-3', name:'クリムゾン'},
-    {cls:'wp-4', name:'フォレスト'},
-    {cls:'wp-5', name:'サンセット'},
-  ];
-  var wgrid = document.getElementById('wallpaper-grid');
-  if(wgrid){
-    wallpapers.forEach(function(w, i){
-      var d = document.createElement('div');
-      d.className = 'setup-wallpaper ' + w.cls + (i===0?' chosen':'');
-      d.dataset.wp = w.cls;
-      d.innerHTML = '<div style="height:100%;display:flex;align-items:flex-end;padding:8px;background:linear-gradient(to top,rgba(0,0,0,0.35),transparent)"><span style="font-size:11px;color:rgba(255,255,255,0.7);font-weight:600">'+w.name+'</span></div>';
-      d.onclick = function(){
-        document.querySelectorAll('.setup-wallpaper').forEach(function(e){ e.classList.remove('chosen'); });
-        d.classList.add('chosen');
-        window._setupWP = d.dataset.wp;
-      };
-      wgrid.appendChild(d);
-    });
-  }
-  window._setupWP = 'wp-0';
-
-  // Done chips
-  var chips = document.getElementById('setup-done-chips');
-  if(chips){
-    ['📝メモ帳','✅タスク','🎵音楽','🌤天気','🧮電卓','🎨ペイント'].forEach(function(s){
-      var sp = document.createElement('span');
-      sp.style.cssText='background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:6px 16px;font-size:13px;color:rgba(255,255,255,0.7)';
-      sp.textContent = s;
-      chips.appendChild(sp);
-    });
-  }
+  var avatars=['😊','😎','🐱','🐶','🦊','🐼','🦁','🐯','🐻','🐰','🦄','🐸'];
+  window._setupAv='😊';
+  var g=document.getElementById('avatar-grid');
+  if(g) avatars.forEach(function(em,i){
+    var d=document.createElement('div');
+    d.className='setup-avatar'+(i===0?' chosen':'');d.dataset.av=em;d.textContent=em;
+    d.onclick=function(){document.querySelectorAll('.setup-avatar').forEach(function(e){e.classList.remove('chosen');});d.classList.add('chosen');window._setupAv=d.dataset.av;};
+    g.appendChild(d);
+  });
+  var wps=[{cls:'wp-0',name:'ミッドナイト'},{cls:'wp-1',name:'ディープパープル'},{cls:'wp-2',name:'オーシャン'},{cls:'wp-3',name:'クリムゾン'},{cls:'wp-4',name:'フォレスト'},{cls:'wp-5',name:'サンセット'}];
+  window._setupWP='wp-0';
+  var wg=document.getElementById('wallpaper-grid');
+  if(wg) wps.forEach(function(w,i){
+    var d=document.createElement('div');
+    d.className='setup-wallpaper '+w.cls+(i===0?' chosen':'');d.dataset.wp=w.cls;
+    d.innerHTML='<div style="height:100%;display:flex;align-items:flex-end;padding:8px;background:linear-gradient(to top,rgba(0,0,0,.35),transparent)"><span style="font-size:11px;color:rgba(255,255,255,.7);font-weight:600">'+w.name+'</span></div>';
+    d.onclick=function(){document.querySelectorAll('.setup-wallpaper').forEach(function(e){e.classList.remove('chosen');});d.classList.add('chosen');window._setupWP=d.dataset.wp;};
+    wg.appendChild(d);
+  });
+  var chips=document.getElementById('setup-done-chips');
+  if(chips)['📝メモ帳','✅タスク','🎵音楽','🧭Safari','💻ターミナル','🎨ペイント'].forEach(function(s){
+    var sp=document.createElement('span');
+    sp.style.cssText='background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:6px 16px;font-size:13px;color:rgba(255,255,255,.7)';
+    sp.textContent=s;chips.appendChild(sp);
+  });
 })();
+
+// ── OS Selector ──
+window._selectedOS=null;
+window.selectOS=function(os){
+  window._selectedOS=os;
+  document.querySelectorAll('.os-card').forEach(function(c){c.classList.remove('selected');});
+  document.getElementById('os-'+os).classList.add('selected');
+  var btn=document.getElementById('os-start-btn');
+  btn.classList.add('show');
+  btn.textContent=(os==='mac'?'macOS':'Windows')+' 仮想マシンを起動 →';
+};
+
+window.launchVM=function(){
+  var sel=document.getElementById('os-select');
+  sel.style.display='flex';
+};
+
+window.startVM=function(){
+  var os=window._selectedOS;if(!os)return;
+  document.getElementById('os-select').style.display='none';
+  var vm=document.getElementById('vm-screen');
+  vm.style.display='flex';
+
+  // Set icon & colors
+  var icon=document.getElementById('vm-os-icon');
+  var bar=document.getElementById('vm-progress');
+  var ttl=document.getElementById('vm-titlebar-text');
+  var vtl=document.getElementById('vm-title-text');
+  var vsub=document.getElementById('vm-sub-text');
+
+  if(os==='mac'){
+    icon.innerHTML='<svg width="52" height="52" viewBox="0 0 814 1000" fill="white"><path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105.2-57.8-155.5-127.4C46 424.8 0 301.9 0 185.4c0-127.6 65.1-195.3 196.4-195.3 74.9 0 128.9 38.4 171.5 38.4 40.8 0 107.6-40.8 191.6-40.8 30.2 0 110.6 2.6 168.3 89.3zm-171.7-109.9c-37.9-44.9-94.1-77.4-148.2-77.4-7.1 0-14.2.6-21.3 1.9 2.6 36.2 18.8 71.3 41.9 96.8 37.9 44.3 96.8 77.4 152.3 77.4 6.4 0 12.8-.6 19.2-1.9-2.6-38.4-21.3-73.5-43.9-96.8z"/></svg>';
+    bar.style.background='linear-gradient(90deg,#0071e3,#30c4ff)';
+    ttl.textContent='UtiloHub — macOS 仮想マシン起動中';
+    vtl.textContent='macOS を起動しています';
+    vsub.textContent='仮想マシンを初期化しています...';
+  } else {
+    icon.innerHTML='<svg width="52" height="52" viewBox="0 0 88 88"><rect x="2" y="2" width="38" height="38" fill="#F25022"/><rect x="48" y="2" width="38" height="38" fill="#7FBA00"/><rect x="2" y="48" width="38" height="38" fill="#00A4EF"/><rect x="48" y="48" width="38" height="38" fill="#FFB900"/></svg>';
+    bar.style.background='linear-gradient(90deg,#0078d4,#00bcf2)';
+    ttl.textContent='UtiloHub — Windows 仮想マシン起動中';
+    vtl.textContent='Windows を起動しています';
+    vsub.textContent='Starting Windows...';
+  }
+
+  // VM log lines
+  var macLogs=['EFI stub: Booting from APFS volume...','AppleACPIPlatform: Init complete','IOPCIFamily: version 2.9 loaded','com.apple.driver.AppleHDA: version 3.8.0','AppleSMC: Loaded OK','WindowServer: started','loginwindow: Welcome back','Dock: initialized','Finder: started'];
+  var winLogs=['Windows is loading files...','Starting Windows...','NTFS volume mounted successfully','hal.dll loaded','kernel32.dll initialized','Loading device drivers...','Starting user session...','Applying your personal settings...','Loading desktop...'];
+  var logs=os==='mac'?macLogs:winLogs;
+  var logEl=document.getElementById('vm-log');
+  var pct=0,li=0;
+  logEl.innerHTML='';
+
+  var iv=setInterval(function(){
+    pct+=Math.random()*8+3;
+    if(pct>98)pct=98;
+    bar.style.width=pct+'%';
+    document.getElementById('vm-pct').textContent=Math.floor(pct)+'%';
+    if(li<logs.length){
+      var line=document.createElement('div');
+      line.textContent=(os==='mac'?'':'> ')+logs[li++];
+      line.style.opacity='0';line.style.transition='opacity .3s';
+      logEl.appendChild(line);
+      setTimeout(function(){line.style.opacity='1';},50);
+      logEl.scrollTop=logEl.scrollHeight;
+    }
+    if(pct>=98){
+      clearInterval(iv);pct=100;bar.style.width='100%';
+      document.getElementById('vm-pct').textContent='100%';
+      setTimeout(function(){
+        vm.style.transition='opacity .4s';vm.style.opacity='0';
+        setTimeout(function(){
+          vm.style.display='none';vm.style.opacity='1';
+          if(os==='win'){
+            document.getElementById('win-vm').style.display='flex';
+            setInterval(function(){var c=document.getElementById('win-clock');if(c)c.textContent=new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});},1000);
+          } else {
+            window.UH&&UH.notify('macOS VM 起動完了','仮想マシンが起動しました','🍎','#0071e3');
+          }
+        },400);
+      },800);
+    }
+  },200);
+};
+
+window.closeWinVM=function(){
+  document.getElementById('win-vm').style.display='none';
+};
+window.winStartMenu=function(){
+  window.UH&&UH.notify('スタートメニュー','Windows 95 風スタートメニュー','⊞','#0078d4');
+};
+window.winNotepad=function(){
+  var wa=document.getElementById('win-desktop-area');if(!wa)return;
+  var w=document.createElement('div');
+  w.style.cssText='position:absolute;top:40px;left:60px;width:400px;height:280px;background:#c0c0c0;border:2px outset #fff;box-shadow:2px 2px 0 #000;font-family:"Segoe UI",sans-serif;display:flex;flex-direction:column;z-index:10';
+  w.innerHTML='<div style="background:linear-gradient(90deg,#000080,#1084d0);color:white;padding:3px 8px;font-size:13px;font-weight:700;display:flex;justify-content:space-between;align-items:center;cursor:move">📄 メモ帳<button onclick="this.closest(\'div[style]\').remove()" style="background:#c0c0c0;border:2px outset #fff;width:18px;height:18px;font-size:11px;cursor:pointer;font-weight:700">✕</button></div><div style="display:flex;gap:2px;padding:2px;background:#c0c0c0;font-size:11px;border-bottom:1px solid #808080"><span style="padding:2px 8px;cursor:pointer">ファイル</span><span style="padding:2px 8px;cursor:pointer">編集</span><span style="padding:2px 8px;cursor:pointer">書式</span></div><textarea style="flex:1;background:white;border:1px inset #808080;margin:2px;padding:4px;font-size:13px;resize:none;outline:none;font-family:Courier New,monospace" placeholder="ここに入力..."></textarea>';
+  wa.appendChild(w);
+};
 </script>
 
 <!-- Firebase -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-
-const fbApp = initializeApp({
-  apiKey:"AIzaSyDuIsgk2lvwUdm8ENLeqUb2ORA3ssSyHLw",
-  authDomain:"utilohub.firebaseapp.com", projectId:"utilohub",
-  storageBucket:"utilohub.firebasestorage.app",
-  messagingSenderId:"350566624079",
-  appId:"1:350566624079:web:b0e86c81d0361b330e733a"
-});
-const auth = getAuth(fbApp);
-window._auth = auth;
-
-const EM = {
-  'auth/user-not-found':'ユーザーが見つかりません',
-  'auth/wrong-password':'パスワードが違います',
-  'auth/email-already-in-use':'このメールは既に使用中',
-  'auth/weak-password':'パスワードは6文字以上',
-  'auth/invalid-credential':'メールまたはパスワードが違います'
+const fbApp=initializeApp({apiKey:"AIzaSyDuIsgk2lvwUdm8ENLeqUb2ORA3ssSyHLw",authDomain:"utilohub.firebaseapp.com",projectId:"utilohub",storageBucket:"utilohub.firebasestorage.app",messagingSenderId:"350566624079",appId:"1:350566624079:web:b0e86c81d0361b330e733a"});
+const auth=getAuth(fbApp);window._auth=auth;
+const EM={'auth/user-not-found':'ユーザーが見つかりません','auth/wrong-password':'パスワードが違います','auth/email-already-in-use':'このメールは既に使用中','auth/weak-password':'パスワードは6文字以上','auth/invalid-credential':'メールまたはパスワードが違います'};
+let setupIdx=0;
+const isSetupDone=()=>localStorage.getItem('uh2_setup_done')==='1';
+window.setupNext=()=>{
+  if(setupIdx===2){const nm=document.getElementById('setup-name')?.value?.trim();if(!nm){alert('名前を入力してください');return;}localStorage.setItem('uh2_setup_name',nm);localStorage.setItem('uh2_setup_av',window._setupAv||'😊');}
+  if(setupIdx===3){localStorage.setItem('uh2_wallpaper',window._setupWP||'wp-0');}
+  if(setupIdx===4)return;
+  goSlide(setupIdx+1);
 };
-
-let setupIdx = 0;
-const isSetupDone = () => localStorage.getItem('uh2_setup_done') === '1';
-
-window.setupNext = () => {
-  if(setupIdx === 2){
-    const nm = document.getElementById('setup-name')?.value?.trim();
-    if(!nm){ alert('名前を入力してください'); return; }
-    localStorage.setItem('uh2_setup_name', nm);
-    localStorage.setItem('uh2_setup_av', window._setupAv || '😊');
-  }
-  if(setupIdx === 3){ localStorage.setItem('uh2_wallpaper', window._setupWP || 'wp-0'); }
-  if(setupIdx === 4){ return; }
-  goSlide(setupIdx + 1);
-};
-window.setupPrev = () => goSlide(setupIdx - 1);
-
-const goSlide = n => {
-  document.getElementById('setup-' + setupIdx)?.classList.replace('active','out');
-  setTimeout(() => {
-    document.getElementById('setup-' + setupIdx)?.classList.remove('out');
-    setupIdx = n;
-    document.getElementById('setup-' + n)?.classList.add('active');
-  }, 300);
-};
-
-window.setupAuth = async e => {
-  e.preventDefault();
-  const em = document.getElementById('setup-email')?.value;
-  const pw = document.getElementById('setup-pw')?.value;
-  const err = document.getElementById('setup-auth-err');
-  try {
-    try { await signInWithEmailAndPassword(auth, em, pw); }
-    catch(e1) { if(e1.code==='auth/user-not-found'||e1.code==='auth/invalid-credential'){ await createUserWithEmailAndPassword(auth, em, pw); } else throw e1; }
-  } catch(e2) { if(err){ err.textContent = EM[e2.code] || e2.message; err.style.display = 'block'; } }
-};
-window.setupGoogle = async () => { try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch(e){ console.error(e); } };
-window.setupGuest  = async () => { try { await signInAnonymously(auth); } catch(e){ console.error(e); } };
-
-window.setupFinish = () => {
-  localStorage.setItem('uh2_setup_done','1');
-  document.getElementById('setup-screen').style.display = 'none';
-  showDesktop();
-};
-
-const showDesktop = () => {
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('app').style.display = 'block';
-  const wp = localStorage.getItem('uh2_wallpaper') || 'wp-0';
-  document.getElementById('wallpaper').className = wp;
-  const name = localStorage.getItem('uh2_setup_name') || 'ゲスト';
-  const av   = localStorage.getItem('uh2_setup_av')   || '😊';
-  const mb = document.getElementById('mb-user');
-  if(mb) mb.textContent = av + ' ' + name;
-  window.UH?.notify('おかえりなさい、' + name + '！', '', '🍎', '#0071e3');
-};
-
-const showLogin = () => {
-  const name = localStorage.getItem('uh2_setup_name') || 'ゲスト';
-  const av   = localStorage.getItem('uh2_setup_av')   || '😊';
-  document.getElementById('ls-avatar').textContent = av;
-  document.getElementById('ls-name').textContent = name;
-  document.getElementById('login-screen').style.display = 'flex';
-  document.getElementById('app').style.display = 'none';
-  setTimeout(() => document.getElementById('ls-pw')?.focus(), 300);
-};
-
-window.lsSubmit = async () => {
-  const pw = document.getElementById('ls-pw')?.value;
-  const em = localStorage.getItem('uh2_email');
-  if(em && pw){ try { await signInWithEmailAndPassword(auth, em, pw); } catch(e){ alert(EM[e.code] || 'エラー'); } }
-  else { await signInAnonymously(auth); }
-};
-window.authLogout = () => { signOut(auth); localStorage.removeItem('uh2_setup_done'); location.reload(); };
-
-onAuthStateChanged(auth, user => {
-  // Finish boot animation first
-  window._finishBoot && window._finishBoot();
-
-  if(user){
-    if(!isSetupDone()){
-      document.getElementById('setup-screen').style.display = 'block';
-      if(!user.isAnonymous) localStorage.setItem('uh2_email', user.email);
-      const nm = document.getElementById('setup-name')?.value?.trim() || user?.email?.split('@')[0] || 'ゲスト';
-      localStorage.setItem('uh2_setup_name', nm);
-      const av = window._setupAv || '😊';
-      const dn = document.getElementById('setup-done-name');
-      const da = document.getElementById('setup-done-av');
-      if(dn) dn.textContent = nm + 'さん、ようこそ！';
-      if(da) da.textContent = av;
-      goSlide(5);
-    } else {
-      document.getElementById('setup-screen').style.display = 'none';
-      showDesktop();
-    }
-  } else {
-    if(isSetupDone()){
-      document.getElementById('setup-screen').style.display = 'none';
-      showLogin();
-    } else {
-      document.getElementById('setup-screen').style.display = 'block';
-    }
-  }
+window.setupPrev=()=>goSlide(setupIdx-1);
+const goSlide=n=>{document.getElementById('setup-'+setupIdx)?.classList.replace('active','out');setTimeout(()=>{document.getElementById('setup-'+setupIdx)?.classList.remove('out');setupIdx=n;document.getElementById('setup-'+n)?.classList.add('active');},300);};
+window.setupAuth=async e=>{e.preventDefault();const em=document.getElementById('setup-email')?.value,pw=document.getElementById('setup-pw')?.value,err=document.getElementById('setup-auth-err');try{try{await signInWithEmailAndPassword(auth,em,pw);}catch(e1){if(e1.code==='auth/user-not-found'||e1.code==='auth/invalid-credential'){await createUserWithEmailAndPassword(auth,em,pw);}else throw e1;}}catch(e2){if(err){err.textContent=EM[e2.code]||e2.message;err.style.display='block';}}};
+window.setupGoogle=async()=>{try{await signInWithPopup(auth,new GoogleAuthProvider());}catch(e){console.error(e);}};
+window.setupGuest=async()=>{try{await signInAnonymously(auth);}catch(e){console.error(e);}};
+window.setupFinish=()=>{localStorage.setItem('uh2_setup_done','1');document.getElementById('setup-screen').style.display='none';showDesktop();};
+const showDesktop=()=>{document.getElementById('login-screen').style.display='none';document.getElementById('app').style.display='block';const wp=localStorage.getItem('uh2_wallpaper')||'wp-0';document.getElementById('wallpaper').className=wp;const name=localStorage.getItem('uh2_setup_name')||'ゲスト';const av=localStorage.getItem('uh2_setup_av')||'😊';const mb=document.getElementById('mb-user');if(mb)mb.textContent=av+' '+name;window.UH?.notify('おかえりなさい、'+name+'！','','🍎','#0071e3');};
+const showLogin=()=>{const name=localStorage.getItem('uh2_setup_name')||'ゲスト';const av=localStorage.getItem('uh2_setup_av')||'😊';document.getElementById('ls-avatar').textContent=av;document.getElementById('ls-name').textContent=name;document.getElementById('login-screen').style.display='flex';document.getElementById('app').style.display='none';setTimeout(()=>document.getElementById('ls-pw')?.focus(),300);};
+window.lsSubmit=async()=>{const pw=document.getElementById('ls-pw')?.value,em=localStorage.getItem('uh2_email');if(em&&pw){try{await signInWithEmailAndPassword(auth,em,pw);}catch(e){alert(EM[e.code]||'エラー');}}else{await signInAnonymously(auth);}};
+window.authLogout=()=>{signOut(auth);localStorage.removeItem('uh2_setup_done');location.reload();};
+onAuthStateChanged(auth,user=>{
+  window._finishBoot&&window._finishBoot();
+  if(user){if(!isSetupDone()){document.getElementById('setup-screen').style.display='block';if(!user.isAnonymous)localStorage.setItem('uh2_email',user.email);const nm=document.getElementById('setup-name')?.value?.trim()||user?.email?.split('@')[0]||'ゲスト';localStorage.setItem('uh2_setup_name',nm);const av=window._setupAv||'😊';const dn=document.getElementById('setup-done-name'),da=document.getElementById('setup-done-av');if(dn)dn.textContent=nm+'さん、ようこそ！';if(da)da.textContent=av;goSlide(5);}else{document.getElementById('setup-screen').style.display='none';showDesktop();}}else{if(isSetupDone()){document.getElementById('setup-screen').style.display='none';showLogin();}else{document.getElementById('setup-screen').style.display='block';}}
 });
 </script>
 
@@ -508,43 +458,162 @@ onAuthStateChanged(auth, user => {
 <script type="module" src="apps/tools.js"></script>
 <script type="module" src="apps/productivity.js"></script>
 
+<!-- Safari Browser App -->
 <script type="module">
-// ── Particles ──
-const cv = document.getElementById('particle-canvas');
-const cx = cv.getContext('2d');
-let pts = [];
-const resize = () => {
-  cv.width = window.innerWidth; cv.height = window.innerHeight;
-  pts = Array.from({length:50}, () => ({
-    x: Math.random()*cv.width, y: Math.random()*cv.height,
-    r: Math.random()*1.8+0.4, vx: (Math.random()-.5)*.35, vy: (Math.random()-.5)*.35,
-    o: Math.random()*.4+.1, h: 200+Math.random()*80
-  }));
-};
-resize(); window.addEventListener('resize', resize);
-(function draw(){
-  cx.clearRect(0,0,cv.width,cv.height);
-  pts.forEach(p => {
-    p.x+=p.vx; p.y+=p.vy;
-    if(p.x<0||p.x>cv.width) p.vx*=-1;
-    if(p.y<0||p.y>cv.height) p.vy*=-1;
-    cx.beginPath(); cx.arc(p.x,p.y,p.r,0,Math.PI*2);
-    cx.fillStyle = 'hsla('+p.h+',70%,65%,'+p.o+')'; cx.fill();
-  });
-  cx.strokeStyle='rgba(167,139,250,0.06)'; cx.lineWidth=.6;
-  for(let i=0;i<pts.length;i++) for(let j=i+1;j<pts.length;j++){
-    const dx=pts[i].x-pts[j].x, dy=pts[i].y-pts[j].y;
-    if(dx*dx+dy*dy<130*130){ cx.beginPath(); cx.moveTo(pts[i].x,pts[i].y); cx.lineTo(pts[j].x,pts[j].y); cx.stroke(); }
-  }
-  requestAnimationFrame(draw);
-})();
+window.openSafari = () => {
+  const bookmarks = [
+    {name:'Google',      url:'https://www.google.com/webhp?igu=1',       icon:'🔍'},
+    {name:'YouTube',     url:'https://www.youtube.com',                   icon:'▶️'},
+    {name:'Wikipedia',   url:'https://ja.wikipedia.org',                  icon:'📖'},
+    {name:'GitHub',      url:'https://github.com/KanoraStudio/UtiloHub',  icon:'🐙'},
+    {name:'天気',         url:'https://wttr.in/?lang=ja',                  icon:'🌤'},
+    {name:'OpenStreetMap',url:'https://www.openstreetmap.org',             icon:'🗺'},
+  ];
+  const bmHTML = bookmarks.map(b =>
+    '<div onclick="safariGo(\''+b.url+'\')" style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:12px;border-radius:12px;transition:background .1s;min-width:72px" onmouseover="this.style.background=\'rgba(255,255,255,.07)\'" onmouseout="this.style.background=\'\'">'+
+    '<div style="width:52px;height:52px;border-radius:14px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:26px;border:1px solid rgba(255,255,255,.1)">'+b.icon+'</div>'+
+    '<span style="font-size:11px;color:rgba(255,255,255,.55);text-align:center;max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+b.name+'</span></div>'
+  ).join('');
 
-// ── Menu bar clock ──
-setInterval(() => {
-  const c = document.getElementById('mb-clock');
-  if(c) c.textContent = new Date().toLocaleString('ja-JP',{month:'short',day:'numeric',weekday:'short',hour:'2-digit',minute:'2-digit'});
-}, 1000);
+  const html = `
+    <div style="display:flex;flex-direction:column;height:100%;background:#1c1c1e">
+      <!-- URL Bar -->
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(28,28,30,.95);border-bottom:1px solid rgba(255,255,255,.06)">
+        <button id="sf-back" class="app-btn btn-ghost" style="padding:5px 10px;font-size:16px;border-radius:8px;min-width:34px" onclick="safariBack()">‹</button>
+        <button id="sf-fwd"  class="app-btn btn-ghost" style="padding:5px 10px;font-size:16px;border-radius:8px;min-width:34px" onclick="safariForward()">›</button>
+        <div style="flex:1;background:rgba(255,255,255,.08);border-radius:10px;display:flex;align-items:center;padding:0 12px;gap:8px;border:1px solid rgba(255,255,255,.1)">
+          <span id="sf-lock" style="font-size:12px;color:#30d158">🔒</span>
+          <input id="sf-url" style="flex:1;background:none;border:none;outline:none;color:white;font-size:13px;padding:7px 0;font-family:-apple-system,'Inter',sans-serif" placeholder="検索またはURLを入力" onkeydown="if(event.key==='Enter'){safariGo(this.value)}" value="">
+          <button onclick="document.getElementById('sf-frame').contentWindow.location.reload()" style="background:none;border:none;color:rgba(255,255,255,.4);cursor:pointer;font-size:14px;padding:0">↺</button>
+        </div>
+        <button class="app-btn btn-ghost" style="padding:5px 10px;font-size:13px;border-radius:8px" onclick="safariAddBM()">＋</button>
+      </div>
+      <!-- Tabs bar -->
+      <div id="sf-tabs" style="display:flex;gap:2px;padding:4px 8px;background:rgba(20,20,22,.9);border-bottom:1px solid rgba(255,255,255,.05);overflow-x:auto;min-height:34px;align-items:center"></div>
+      <!-- Content -->
+      <div style="flex:1;position:relative">
+        <div id="sf-newtab" style="position:absolute;inset:0;overflow-y:auto;padding:32px 24px;background:#1c1c1e">
+          <div style="font-size:28px;font-weight:300;color:white;margin-bottom:24px;text-align:center">よく訪れるサイト</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center">${bmHTML}</div>
+          <div style="margin-top:40px;text-align:center">
+            <div id="sf-date" style="font-size:15px;color:rgba(255,255,255,.3)"></div>
+          </div>
+        </div>
+        <iframe id="sf-frame" style="position:absolute;inset:0;width:100%;height:100%;border:none;display:none" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation"></iframe>
+      </div>
+      <!-- Bottom bar -->
+      <div style="display:flex;justify-content:center;gap:28px;padding:8px;border-top:1px solid rgba(255,255,255,.06);background:rgba(28,28,30,.95)">
+        <button class="app-btn btn-ghost" style="padding:6px 14px;font-size:12px;border-radius:8px" onclick="safariNewTab()">＋ 新規タブ</button>
+        <button class="app-btn btn-ghost" style="padding:6px 14px;font-size:12px;border-radius:8px" onclick="safariShare()">⬆ 共有</button>
+        <button class="app-btn btn-ghost" style="padding:6px 14px;font-size:12px;border-radius:8px" onclick="safariBookmarks()">📖 ブックマーク</button>
+      </div>
+    </div>`;
+
+  UH.open('safari','Safari','🧭',html,860,580,80,50);
+
+  // Tab state
+  window._sfTabs = [{id:1, title:'新規タブ', url:'', active:true}];
+  window._sfTabId = 1;
+  window._sfHistory = [[]]; // per-tab history
+  window._sfHistIdx = [0];
+  renderSafariTabs();
+
+  // Clock on new tab
+  const tick = () => {
+    const d = document.getElementById('sf-date');
+    if(!d) return;
+    d.textContent = new Date().toLocaleString('ja-JP',{year:'numeric',month:'long',day:'numeric',weekday:'long',hour:'2-digit',minute:'2-digit'});
+    setTimeout(tick, 10000);
+  };
+  tick();
+};
+
+window.renderSafariTabs = () => {
+  const bar = document.getElementById('sf-tabs');
+  if(!bar) return;
+  bar.innerHTML = window._sfTabs.map((t,i) =>
+    '<div onclick="safariSwitchTab('+i+')" style="display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:8px;cursor:pointer;font-size:12px;white-space:nowrap;max-width:160px;background:'+(t.active?'rgba(255,255,255,.12)':'rgba(255,255,255,.04)')+';color:'+(t.active?'white':'rgba(255,255,255,.5)')+';border:1px solid '+(t.active?'rgba(255,255,255,.15)':'transparent')+';transition:all .15s">'+
+    '<span style="overflow:hidden;text-overflow:ellipsis;max-width:110px">'+t.title+'</span>'+
+    '<span onclick="event.stopPropagation();safariCloseTab('+i+')" style="color:rgba(255,255,255,.4);font-size:14px;line-height:1;padding:0 2px;transition:color .1s" onmouseover="this.style.color=\'white\'" onmouseout="this.style.color=\'rgba(255,255,255,.4)\'">×</span></div>'
+  ).join('');
+};
+
+window.safariGo = (input) => {
+  if(!input || !input.trim()) return;
+  let url = input.trim();
+  if(!url.startsWith('http')) {
+    if(url.includes('.') && !url.includes(' ')) url = 'https://'+url;
+    else url = 'https://www.google.com/search?q='+encodeURIComponent(url)+'&igu=1';
+  }
+  const frame = document.getElementById('sf-frame');
+  const nt    = document.getElementById('sf-newtab');
+  const urlIn = document.getElementById('sf-url');
+  const lock  = document.getElementById('sf-lock');
+  if(!frame) return;
+  frame.style.display = 'block';
+  if(nt) nt.style.display = 'none';
+  frame.src = url;
+  if(urlIn) urlIn.value = url;
+  if(lock) lock.textContent = url.startsWith('https') ? '🔒' : '🔓';
+  // Update active tab
+  const ai = window._sfTabs.findIndex(t => t.active);
+  if(ai >= 0) { window._sfTabs[ai].url = url; window._sfTabs[ai].title = new URL(url).hostname.replace('www.',''); }
+  renderSafariTabs();
+  frame.onload = () => {
+    try { const t=frame.contentDocument?.title; if(t){const ai2=window._sfTabs.findIndex(x=>x.active);if(ai2>=0)window._sfTabs[ai2].title=t;renderSafariTabs();} } catch(e){}
+  };
+};
+
+window.safariBack    = () => { document.getElementById('sf-frame')?.contentWindow?.history?.back(); };
+window.safariForward = () => { document.getElementById('sf-frame')?.contentWindow?.history?.forward(); };
+
+window.safariNewTab = () => {
+  window._sfTabs.forEach(t => t.active = false);
+  const id = ++window._sfTabId;
+  window._sfTabs.push({id, title:'新規タブ', url:'', active:true});
+  const frame = document.getElementById('sf-frame');
+  const nt    = document.getElementById('sf-newtab');
+  if(frame){ frame.style.display='none'; frame.src='about:blank'; }
+  if(nt) nt.style.display = 'block';
+  document.getElementById('sf-url').value = '';
+  renderSafariTabs();
+};
+
+window.safariSwitchTab = (i) => {
+  window._sfTabs.forEach(t => t.active=false);
+  window._sfTabs[i].active = true;
+  const frame = document.getElementById('sf-frame');
+  const nt    = document.getElementById('sf-newtab');
+  const url   = window._sfTabs[i].url;
+  if(url){ if(frame){ frame.style.display='block'; frame.src=url; } if(nt) nt.style.display='none'; document.getElementById('sf-url').value=url; }
+  else  { if(frame){ frame.style.display='none'; frame.src='about:blank'; } if(nt) nt.style.display='block'; document.getElementById('sf-url').value=''; }
+  renderSafariTabs();
+};
+
+window.safariCloseTab = (i) => {
+  if(window._sfTabs.length <= 1){ safariNewTab(); return; }
+  const wasActive = window._sfTabs[i].active;
+  window._sfTabs.splice(i,1);
+  if(wasActive) window._sfTabs[Math.max(0,i-1)].active = true;
+  const ai = window._sfTabs.findIndex(t=>t.active);
+  safariSwitchTab(ai < 0 ? 0 : ai);
+};
+
+window.safariShare = () => {
+  const url = document.getElementById('sf-url')?.value;
+  if(url){ navigator.clipboard?.writeText(url); UH.notify('URLをコピーしました',url.substring(0,40),'🔗','#0071e3'); }
+};
+window.safariAddBM  = () => UH.notify('ブックマーク追加','このページをブックマークに追加しました','📖','#ff9f0a');
+window.safariBookmarks = () => UH.notify('ブックマーク','ブックマーク機能は近日公開予定です','📖','#636366');
 </script>
 
+<!-- Particles + clock -->
+<script type="module">
+const cv=document.getElementById('particle-canvas'),cx=cv.getContext('2d');let pts=[];
+const resize=()=>{cv.width=window.innerWidth;cv.height=window.innerHeight;pts=Array.from({length:50},()=>({x:Math.random()*cv.width,y:Math.random()*cv.height,r:Math.random()*1.8+.4,vx:(Math.random()-.5)*.35,vy:(Math.random()-.5)*.35,o:Math.random()*.4+.1,h:200+Math.random()*80}));};
+resize();window.addEventListener('resize',resize);
+(function draw(){cx.clearRect(0,0,cv.width,cv.height);pts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>cv.width)p.vx*=-1;if(p.y<0||p.y>cv.height)p.vy*=-1;cx.beginPath();cx.arc(p.x,p.y,p.r,0,Math.PI*2);cx.fillStyle='hsla('+p.h+',70%,65%,'+p.o+')';cx.fill();});cx.strokeStyle='rgba(167,139,250,.06)';cx.lineWidth=.6;for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y;if(dx*dx+dy*dy<130*130){cx.beginPath();cx.moveTo(pts[i].x,pts[i].y);cx.lineTo(pts[j].x,pts[j].y);cx.stroke();}}requestAnimationFrame(draw);})();
+setInterval(()=>{const c=document.getElementById('mb-clock');if(c)c.textContent=new Date().toLocaleString('ja-JP',{month:'short',day:'numeric',weekday:'short',hour:'2-digit',minute:'2-digit'});},1000);
+</script>
 </body>
 </html>
