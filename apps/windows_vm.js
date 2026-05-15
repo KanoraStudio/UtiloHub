@@ -3,162 +3,148 @@
 // ===================================================================
 
 // ── グローバル状態 ──
-var _wWins = {};      // 開いているウィンドウ
-var _wZ    = 100;     // z-index カウンタ
+var _wWins = {};
+var _wZ    = 100;
 var _wStartOpen = false;
-var _wMem  = 0;       // 電卓メモリ
+var _wMem  = 0;
+var _wClockIv = null;
+var _wDOMBuilt = false;
 
 // ================================================================
-//  エントリポイント：VMを表示する
+//  エントリポイント
 // ================================================================
 window.launchWindowsVM = function() {
-  // 既に開いていたら最前面へ
-  var el = document.getElementById('win-fullscreen');
-  if(el && el.style.display === 'flex') return;
+  console.log('[WinVM] launchWindowsVM called');
 
-  _buildWinDOM();
+  // DOMを構築(初回のみ)
+  if (!_wDOMBuilt) {
+    _buildWinDOM();
+    _wDOMBuilt = true;
+    console.log('[WinVM] DOM built');
+  }
+
   var vm = document.getElementById('win-fullscreen');
-  vm.style.display = 'flex';
-  vm.style.opacity = '0';
-  setTimeout(function(){ vm.style.transition='opacity .3s'; vm.style.opacity='1'; }, 10);
+  if (!vm) {
+    console.error('[WinVM] win-fullscreen not found!');
+    alert('Windows XP VMの起動に失敗しました。ページをリロードしてください。');
+    return;
+  }
 
-  // スタートメニューのユーザー情報
+  // リセット
+  _wWins = {}; _wZ = 100; _wStartOpen = false;
+  if (_wClockIv) { clearInterval(_wClockIv); _wClockIv = null; }
+
+  // 表示
+  vm.style.cssText = 'position:fixed;inset:0;z-index:50000;display:flex;flex-direction:column;font-family:"Segoe UI",Tahoma,Arial,sans-serif;font-size:13px;opacity:0;transition:opacity .3s';
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){ vm.style.opacity = '1'; });
+  });
+
+  // ユーザー情報
   var av = localStorage.getItem('uh2_setup_av') || '😊';
   var nm = localStorage.getItem('uh2_setup_name') || 'ゲスト';
-  var el2 = document.getElementById('wsm-av'); if(el2) el2.textContent = av;
-  var el3 = document.getElementById('wsm-nm'); if(el3) el3.textContent = nm;
+  var elAv = document.getElementById('wsm-av'); if(elAv) elAv.textContent = av;
+  var elNm = document.getElementById('wsm-nm'); if(elNm) elNm.textContent = nm;
+
+  // 既存ウィンドウをクリア
+  var wa = document.getElementById('win-warea');
+  if(wa) wa.innerHTML = '';
 
   _wStartClock();
   _renderDesktopIcons();
+  console.log('[WinVM] ready');
 };
 
 window.closeWindowsVM = function() {
   var vm = document.getElementById('win-fullscreen');
   if(!vm) return;
-  vm.style.transition = 'opacity .3s';
   vm.style.opacity = '0';
-  setTimeout(function(){ vm.style.display='none'; _wWins={}; _wZ=100; }, 300);
+  setTimeout(function(){
+    vm.style.display = 'none';
+    _wWins = {}; _wZ = 100;
+    if(_wClockIv){ clearInterval(_wClockIv); _wClockIv = null; }
+  }, 300);
 };
 
 // ================================================================
-//  DOM 構築（初回のみ）
+//  DOM 構築(初回のみ)
 // ================================================================
 window._buildWinDOM = function() {
   if(document.getElementById('win-fullscreen')) return;
 
   var div = document.createElement('div');
   div.id = 'win-fullscreen';
-  div.style.cssText = [
-    'position:fixed;inset:0;z-index:50000;display:none;flex-direction:column',
-    'font-family:"Segoe UI",Tahoma,Arial,sans-serif;font-size:13px'
-  ].join(';');
+  div.style.cssText = 'position:fixed;inset:0;z-index:50000;display:none;flex-direction:column;font-family:"Segoe UI",Tahoma,Arial,sans-serif;font-size:13px';
 
-  div.innerHTML = [
-    // ── デスクトップ ──
-    '<div id="win-desktop" style="flex:1;position:relative;overflow:hidden;background:linear-gradient(180deg,#1a6fc4 0%,#3a9bd5 45%,#5bb8f0 100%)">',
-      // Bliss 丘
-      '<div style="position:absolute;bottom:0;left:-10%;right:-10%;height:42%;background:linear-gradient(180deg,#5ec936 0%,#3aaa1c 100%);border-radius:60% 60% 0 0 / 100px 100px 0 0"></div>',
-      // アイコンエリア
-      '<div id="win-icon-area" style="position:absolute;top:8px;left:8px;display:flex;flex-direction:column;gap:2px"></div>',
-      // ウィンドウエリア
-      '<div id="win-warea" style="position:absolute;inset:0"></div>',
-      // スタートメニュー
-      '<div id="win-startmenu" style="',
-        'display:none;position:absolute;bottom:40px;left:0;width:380px;',
-        'background:#fff;border:1px solid #0054e3;border-radius:8px 8px 0 0;',
-        'overflow:hidden;flex-direction:column;',
-        'box-shadow:4px -2px 16px rgba(0,0,0,.5);z-index:9999',
-      '">',
-        // ヘッダー
-        '<div style="background:linear-gradient(90deg,#245edb,#1a48b8);padding:10px 14px;display:flex;align-items:center;gap:12px">',
-          '<div id="wsm-av" style="width:48px;height:48px;border-radius:4px;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;font-size:30px;border:2px solid rgba(255,255,255,.5)">😊</div>',
-          '<div id="wsm-nm" style="font-size:15px;font-weight:700;color:white;text-shadow:1px 1px 2px rgba(0,0,0,.5)">ゲスト</div>',
-        '</div>',
-        // ボディ
-        '<div style="display:flex;min-height:260px">',
-          // 左
-          '<div style="flex:1;border-right:1px solid #d0d0d0;padding:4px 0">',
-            _smItem('🌐','Internet Explorer','Webブラウザ','wOpen_ie()'),
-            _smItem('📄','メモ帳','テキストエディタ','wOpen_notepad()'),
-            _smItem('🎨','ペイント','画像エディタ','wOpen_paint()'),
-            _smItem('🧮','電卓','calc.exe','wOpen_calc()'),
-            _smItem('🖤','コマンドプロンプト','cmd.exe','wOpen_cmd()'),
-            _smItem('🎵','Windows Media Player','音楽プレイヤー','wOpen_media()'),
-            '<div style="height:1px;background:#ccc;margin:4px 8px"></div>',
-            _smItem('⚙️','すべてのプログラム →','',''),
-          '</div>',
-          // 右
-          '<div style="flex:1;background:#d8e4f8;padding:4px 0">',
-            '<div style="font-size:10px;font-weight:700;color:#245edb;padding:6px 12px 2px;text-transform:uppercase">マイ</div>',
-            _smItem('📁','マイドキュメント','','wOpen_docs()'),
-            _smItem('🖼','マイピクチャ','','wOpen_pics()'),
-            _smItem('🎵','マイミュージック','','wOpen_music()'),
-            _smItem('🖥','マイコンピュータ','','wOpen_mypc()'),
-            '<div style="height:1px;background:#b0c0d8;margin:4px 8px"></div>',
-            '<div style="font-size:10px;font-weight:700;color:#245edb;padding:6px 12px 2px;text-transform:uppercase">設定</div>',
-            _smItem('🔧','コントロールパネル','','wOpen_control()'),
-            _smItem('🖨','プリンタと FAX','','wOpen_printers()'),
-            _smItem('🔍','検索','','wOpen_search()'),
-            _smItem('❓','ヘルプとサポート','','wOpen_help()'),
-          '</div>',
-        '</div>',
-        // フッター
-        '<div style="background:linear-gradient(180deg,#245edb,#1a48b8);display:flex;justify-content:flex-end;gap:6px;padding:6px 8px">',
-          '<button onclick="wToggleStart();alert(\'ログオフ\')" style="background:linear-gradient(180deg,#4a80d4,#2460c0);border:1px solid rgba(255,255,255,.2);color:white;padding:4px 14px;border-radius:3px;cursor:pointer;font-family:inherit;font-size:12px">🔄 ログオフ(L)</button>',
-          '<button onclick="closeWindowsVM()" style="background:linear-gradient(180deg,#ff6060,#cc0000);border:1px solid rgba(255,255,255,.2);color:white;padding:4px 14px;border-radius:3px;cursor:pointer;font-family:inherit;font-size:12px">⏻ 電源を切る(U)</button>',
-        '</div>',
-      '</div>',
-      // 右上の戻るボタン
-      '<button onclick="closeWindowsVM()" style="position:absolute;top:6px;right:8px;z-index:10001;background:linear-gradient(180deg,#ff7070,#cc0000);border:1px solid #800;color:white;padding:4px 14px;font-size:12px;font-weight:700;border-radius:4px;cursor:pointer;box-shadow:1px 1px 4px rgba(0,0,0,.4)">✕ UtiloHubに戻る</button>',
-    '</div>',
-
-    // ── タスクバー ──
-    '<div id="win-taskbar" style="',
-      'height:40px;display:flex;align-items:center;flex-shrink:0;',
-      'background:linear-gradient(180deg,#245edb 0%,#1a48b8 45%,#1a54cc 46%,#2468e8 100%);',
-      'border-top:2px solid #0a2a9a;position:relative;z-index:9998',
-    '">',
-      // スタートボタン
-      '<button id="win-start-btn" onclick="wToggleStart()" style="',
-        'height:100%;padding:0 14px 0 8px;',
-        'background:linear-gradient(180deg,#5ec95e 0%,#3aaa3a 45%,#2e9e2e 46%,#4ec44e 100%);',
-        'border:none;border-right:2px solid #1a8a1a;border-radius:0 14px 14px 0;',
-        'color:white;font-size:15px;font-weight:900;cursor:pointer;',
-        'display:flex;align-items:center;gap:7px;',
-        'font-family:"Franklin Gothic Medium","Arial Narrow",Arial,sans-serif;',
-        'text-shadow:1px 1px 2px rgba(0,0,0,.6);',
-        'box-shadow:inset 0 1px 0 rgba(255,255,255,.3),2px 0 6px rgba(0,0,0,.3)',
-      '">',
-        '<svg width="20" height="20" viewBox="0 0 88 88">',
-          '<rect x="2" y="2" width="38" height="38" rx="4" fill="#F25022"/>',
-          '<rect x="48" y="2" width="38" height="38" rx="4" fill="#7FBA00"/>',
-          '<rect x="2" y="48" width="38" height="38" rx="4" fill="#00A4EF"/>',
-          '<rect x="48" y="48" width="38" height="38" rx="4" fill="#FFB900"/>',
-        '</svg>',
-        'スタート',
-      '</button>',
-      // タスクボタンエリア
-      '<div id="win-taskbtns" style="flex:1;display:flex;gap:3px;padding:0 6px;overflow:hidden;align-items:center"></div>',
-      // システムトレイ
-      '<div style="display:flex;align-items:center;gap:8px;padding:0 10px;background:linear-gradient(180deg,#1248b8,#0a3090);height:100%;border-left:1px solid rgba(255,255,255,.15)">',
-        '<span style="font-size:16px;cursor:pointer" title="音量">🔊</span>',
-        '<span style="font-size:16px;cursor:pointer" title="ネットワーク">🌐</span>',
-        '<div id="win-clock" style="text-align:center;font-size:12px;color:rgba(255,255,255,.95);line-height:1.4;cursor:pointer;min-width:48px"></div>',
-      '</div>',
-    '</div>'
-  ].join('');
+  div.innerHTML = '<div id="win-desktop" style="flex:1;position:relative;overflow:hidden;background:linear-gradient(180deg,#1a6fc4 0%,#3a9bd5 45%,#5bb8f0 100%)">'
+    + '<div style="position:absolute;bottom:0;left:-10%;right:-10%;height:42%;background:linear-gradient(180deg,#5ec936 0%,#3aaa1c 100%);border-radius:60% 60% 0 0 / 100px 100px 0 0"></div>'
+    + '<div id="win-icon-area" style="position:absolute;top:8px;left:8px;display:flex;flex-direction:column;gap:2px"></div>'
+    + '<div id="win-warea" style="position:absolute;inset:0"></div>'
+    + '<div id="win-startmenu" style="display:none;position:absolute;bottom:40px;left:0;width:380px;background:#fff;border:1px solid #0054e3;border-radius:8px 8px 0 0;overflow:hidden;flex-direction:column;box-shadow:4px -2px 16px rgba(0,0,0,.5);z-index:9999">'
+      + '<div style="background:linear-gradient(90deg,#245edb,#1a48b8);padding:10px 14px;display:flex;align-items:center;gap:12px">'
+        + '<div id="wsm-av" style="width:48px;height:48px;border-radius:4px;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;font-size:30px;border:2px solid rgba(255,255,255,.5)">😊</div>'
+        + '<div id="wsm-nm" style="font-size:15px;font-weight:700;color:white;text-shadow:1px 1px 2px rgba(0,0,0,.5)">ゲスト</div>'
+      + '</div>'
+      + '<div style="display:flex;min-height:260px">'
+        + '<div style="flex:1;border-right:1px solid #d0d0d0;padding:4px 0">'
+          + _smItem2("🌐","Internet Explorer","Webブラウザ","wOpen_ie()")
+          + _smItem2("📄","メモ帳","テキストエディタ","wOpen_notepad()")
+          + _smItem2("🎨","ペイント","画像エディタ","wOpen_paint()")
+          + _smItem2("🧮","電卓","calc.exe","wOpen_calc()")
+          + _smItem2("🖤","コマンドプロンプト","cmd.exe","wOpen_cmd()")
+          + _smItem2("🎵","Windows Media Player","音楽プレイヤー","wOpen_media()")
+          + '<div style="height:1px;background:#ccc;margin:4px 8px"></div>'
+          + _smItem2("⚙️","すべてのプログラム →","","")
+        + '</div>'
+        + '<div style="flex:1;background:#d8e4f8;padding:4px 0">'
+          + '<div style="font-size:10px;font-weight:700;color:#245edb;padding:6px 12px 2px;text-transform:uppercase">マイ</div>'
+          + _smItem2("📁","マイドキュメント","","wOpen_docs()")
+          + _smItem2("🖼","マイピクチャ","","wOpen_pics()")
+          + _smItem2("🎵","マイミュージック","","wOpen_music()")
+          + _smItem2("🖥","マイコンピュータ","","wOpen_mypc()")
+          + '<div style="height:1px;background:#b0c0d8;margin:4px 8px"></div>'
+          + '<div style="font-size:10px;font-weight:700;color:#245edb;padding:6px 12px 2px;text-transform:uppercase">設定</div>'
+          + _smItem2("⚙️","コントロールパネル","","wOpen_control()")
+          + _smItem2("🔍","検索","","wOpen_search()")
+          + _smItem2("❓","ヘルプとサポート","","wOpen_help()")
+        + '</div>'
+      + '</div>'
+      + '<div style="background:linear-gradient(180deg,#245edb,#1a48b8);display:flex;justify-content:flex-end;gap:6px;padding:6px 8px">'
+        + '<button onclick="wToggleStart();alert(\'ログオフ\')" style="background:linear-gradient(180deg,#4a80d4,#2460c0);border:1px solid rgba(255,255,255,.2);color:white;padding:4px 14px;border-radius:3px;cursor:pointer;font-family:inherit;font-size:12px">🔄 ログオフ(L)</button>'
+        + '<button onclick="closeWindowsVM()" style="background:linear-gradient(180deg,#ff6060,#cc0000);border:1px solid rgba(255,255,255,.2);color:white;padding:4px 14px;border-radius:3px;cursor:pointer;font-family:inherit;font-size:12px">⏻ 電源を切る(U)</button>'
+      + '</div>'
+    + '</div>'
+    + '<button onclick="closeWindowsVM()" style="position:absolute;top:6px;right:8px;z-index:10001;background:linear-gradient(180deg,#ff7070,#cc0000);border:1px solid #800;color:white;padding:4px 14px;font-size:12px;font-weight:700;border-radius:4px;cursor:pointer;box-shadow:1px 1px 4px rgba(0,0,0,.4)">✕ UtiloHubに戻る</button>'
+  + '</div>'
+  + '<div id="win-taskbar" style="height:40px;display:flex;align-items:center;flex-shrink:0;background:linear-gradient(180deg,#245edb 0%,#1a48b8 45%,#1a54cc 46%,#2468e8 100%);border-top:2px solid #0a2a9a;position:relative;z-index:9998">'
+    + '<button id="win-start-btn" onclick="wToggleStart()" style="height:100%;padding:0 14px 0 8px;background:linear-gradient(180deg,#5ec95e 0%,#3aaa3a 45%,#2e9e2e 46%,#4ec44e 100%);border:none;border-right:2px solid #1a8a1a;border-radius:0 14px 14px 0;color:white;font-size:15px;font-weight:900;cursor:pointer;display:flex;align-items:center;gap:7px;font-family:\"Franklin Gothic Medium\",\"Arial Narrow\",Arial,sans-serif;text-shadow:1px 1px 2px rgba(0,0,0,.6);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),2px 0 6px rgba(0,0,0,.3)">'
+      + '<svg width="20" height="20" viewBox="0 0 88 88"><rect x="2" y="2" width="38" height="38" rx="4" fill="#F25022"/><rect x="48" y="2" width="38" height="38" rx="4" fill="#7FBA00"/><rect x="2" y="48" width="38" height="38" rx="4" fill="#00A4EF"/><rect x="48" y="48" width="38" height="38" rx="4" fill="#FFB900"/></svg>'
+      + 'スタート'
+    + '</button>'
+    + '<div id="win-taskbtns" style="flex:1;display:flex;gap:3px;padding:0 6px;overflow:hidden;align-items:center"></div>'
+    + '<div style="display:flex;align-items:center;gap:8px;padding:0 10px;background:linear-gradient(180deg,#1248b8,#0a3090);height:100%;border-left:1px solid rgba(255,255,255,.15)">'
+      + '<span style="font-size:16px;cursor:pointer" title="音量">🔊</span>'
+      + '<span style="font-size:16px;cursor:pointer" title="ネットワーク">🌐</span>'
+      + '<div id="win-clock" style="text-align:center;font-size:12px;color:rgba(255,255,255,.95);line-height:1.4;cursor:pointer;min-width:48px"></div>'
+    + '</div>'
+  + '</div>';
 
   document.body.appendChild(div);
+  console.log('[WinVM] DOM appended to body, win-fullscreen:', !!document.getElementById('win-fullscreen'));
 };
 
-function _smItem(icon, label, sub, fn) {
-  var cl = fn ? 'cursor:pointer' : 'cursor:default;color:#aaa';
-  var click = fn ? 'onclick="wToggleStart();'+fn+'"' : '';
-  return '<div '+click+' style="display:flex;align-items:center;gap:10px;padding:5px 12px;'+cl+';transition:background .1s" onmouseover="if(\''+fn+'\')this.style.background=\'#316ac5\';this.style.color=\'white\'" onmouseout="this.style.background=\'\';this.style.color=\'\'">'+
-    '<span style="font-size:22px;flex-shrink:0">'+icon+'</span>'+
-    '<div><div style="font-size:12px">'+label+'</div>'+(sub?'<div style="font-size:10px;color:#888">'+sub+'</div>':'')+'</div>'+
-  '</div>';
+function _smItem2(icon, label, sub, fn) {
+  var onclick = fn ? 'onclick="wToggleStart();' + fn + '"' : '';
+  var style = fn ? 'cursor:pointer' : 'cursor:default;opacity:.5';
+  return '<div ' + onclick + ' style="display:flex;align-items:center;gap:10px;padding:5px 12px;' + style + ';transition:background .1s" '
+    + 'onmouseover="this.style.background=\'#316ac5\';this.querySelectorAll(\'*\').forEach(function(e){e.style.color=\'white\'})" '
+    + 'onmouseout="this.style.background=\'\';this.querySelectorAll(\'*\').forEach(function(e){e.style.color=\'\'})">'
+    + '<span style="font-size:22px;flex-shrink:0">' + icon + '</span>'
+    + '<div><div style="font-size:12px;color:#000">' + label + '</div>'
+    + (sub ? '<div style="font-size:10px;color:#888">' + sub + '</div>' : '')
+    + '</div></div>';
 }
+
 
 // ================================================================
 //  デスクトップアイコン
@@ -212,7 +198,6 @@ window._wCreate = function(id, title, icon, bodyHTML, w, h) {
   el.style.cssText = 'position:absolute;left:'+x+'px;top:'+y+'px;width:'+w+'px;height:'+h+'px;z-index:'+(++_wZ)+';display:flex;flex-direction:column;border-radius:8px 8px 0 0;border:2px solid #0054e3;box-shadow:2px 2px 12px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,255,255,.2);overflow:visible;min-width:200px;min-height:80px';
 
   el.innerHTML =
-    // タイトルバー
     '<div id="wtb-'+id+'" style="height:30px;display:flex;align-items:center;padding:0 6px;background:linear-gradient(180deg,#4d9cf0 0%,#1462d1 50%,#1a75e8 100%);border-radius:6px 6px 0 0;cursor:move;user-select:none;flex-shrink:0">'+
       '<span style="font-size:14px;margin-right:6px">'+icon+'</span>'+
       '<span style="flex:1;font-size:12px;font-weight:700;color:white;text-shadow:1px 1px 2px rgba(0,0,0,.6);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+title+'</span>'+
@@ -222,11 +207,8 @@ window._wCreate = function(id, title, icon, bodyHTML, w, h) {
         '<button onclick="wClose(\''+id+'\')" style="'+_tbBtnStyle('#ff3b30','#a00000')+'" title="閉じる">✕</button>'+
       '</div>'+
     '</div>'+
-    // メニューバー
     '<div id="wmb-'+id+'" style="height:22px;display:flex;align-items:center;padding:0 4px;background:#f0f0f0;border-bottom:1px solid #c0c0c0;flex-shrink:0;font-size:12px"></div>'+
-    // ボディ
     '<div id="wbody-'+id+'" style="flex:1;overflow:auto;background:#fff;border-top:none">'+bodyHTML+'</div>'+
-    // ステータスバー
     '<div id="wst-'+id+'" style="height:20px;display:flex;align-items:center;padding:0 8px;background:linear-gradient(180deg,#e0e0e0,#d0d0d0);border-top:1px solid #aaa;font-size:11px;color:#444;flex-shrink:0">準備完了</div>';
 
   area.appendChild(el);
@@ -380,7 +362,9 @@ window._wStartClock = function() {
     var n=new Date();
     c.innerHTML=n.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})+'<br><span style="font-size:10px">'+n.toLocaleDateString('ja-JP',{month:'2-digit',day:'2-digit'})+'</span>';
   };
-  tick(); setInterval(tick,1000);
+  tick();
+  if(_wClockIv) clearInterval(_wClockIv);
+  _wClockIv = setInterval(tick, 1000);
 };
 
 // ================================================================
@@ -389,28 +373,28 @@ window._wStartClock = function() {
 
 // ── マイコンピュータ ──
 window.wOpen_mypc = function() {
-  var html='<div style="display:flex;height:100%;font-size:12px">'+
-    '<div style="width:160px;background:linear-gradient(180deg,#dce8fc,#c5d8f8);border-right:1px solid #aab8d8;padding:8px;flex-shrink:0">'+
-      '<div style="font-size:10px;font-weight:700;color:#245edb;padding:4px 0 6px;text-transform:uppercase">システムタスク</div>'+
-      '<div class="wexp-link" onclick="alert(\'システム情報\')">ℹ️ システム情報</div>'+
-      '<div class="wexp-link" onclick="wOpen_control()">⚙️ コントロールパネル</div>'+
-      '<div style="font-size:10px;font-weight:700;color:#245edb;padding:10px 0 6px;text-transform:uppercase">その他の場所</div>'+
-      '<div class="wexp-link" onclick="wOpen_docs()">📁 マイドキュメント</div>'+
-      '<div class="wexp-link" onclick="alert(\'ネットワーク\')">🌐 マイネットワーク</div>'+
-    '</div>'+
-    '<div style="flex:1;padding:12px;overflow:auto">'+
-      '<div style="font-size:11px;font-weight:700;color:#245edb;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #c0c0c0">ハードディスクドライブ</div>'+
-      '<div style="display:flex;flex-wrap:wrap;gap:10px">'+
-        _driveCard('💿','ローカルディスク (C:)','62.3 GB 空き / 80 GB','wOpen_cdrive'),
-        _driveCard('💿','ローカルディスク (D:)','35.1 GB 空き / 40 GB',''),
-      '</div>'+
-      '<div style="font-size:11px;font-weight:700;color:#245edb;margin:14px 0 8px;padding-bottom:6px;border-bottom:1px solid #c0c0c0">デバイス（リムーバブル）</div>'+
-      '<div style="display:flex;flex-wrap:wrap;gap:10px">'+
-        _driveCard('💿','DVD ドライブ (E:)','ディスクなし',''),
-        _driveCard('💾','フロッピー (A:)','1.44 MB',''),
-      '</div>'+
-    '</div>'+
-  '</div>';
+  var html='<div style="display:flex;height:100%;font-size:12px">'
+    +'<div style="width:160px;background:linear-gradient(180deg,#dce8fc,#c5d8f8);border-right:1px solid #aab8d8;padding:8px;flex-shrink:0">'
+      +'<div style="font-size:10px;font-weight:700;color:#245edb;padding:4px 0 6px;text-transform:uppercase">システムタスク</div>'
+      +'<div class="wexp-link" onclick="alert(\'システム情報\')">ℹ️ システム情報</div>'
+      +'<div class="wexp-link" onclick="wOpen_control()">⚙️ コントロールパネル</div>'
+      +'<div style="font-size:10px;font-weight:700;color:#245edb;padding:10px 0 6px;text-transform:uppercase">その他の場所</div>'
+      +'<div class="wexp-link" onclick="wOpen_docs()">📁 マイドキュメント</div>'
+      +'<div class="wexp-link" onclick="alert(\'ネットワーク\')">🌐 マイネットワーク</div>'
+    +'</div>'
+    +'<div style="flex:1;padding:12px;overflow:auto">'
+      +'<div style="font-size:11px;font-weight:700;color:#245edb;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #c0c0c0">ハードディスクドライブ</div>'
+      +'<div style="display:flex;flex-wrap:wrap;gap:10px">'
+        +_driveCard('💿','ローカルディスク (C:)','62.3 GB 空き / 80 GB','wOpen_cdrive')
+        +_driveCard('💿','ローカルディスク (D:)','35.1 GB 空き / 40 GB','')
+      +'</div>'
+      +'<div style="font-size:11px;font-weight:700;color:#245edb;margin:14px 0 8px;padding-bottom:6px;border-bottom:1px solid #c0c0c0">デバイス(リムーバブル)</div>'
+      +'<div style="display:flex;flex-wrap:wrap;gap:10px">'
+        +_driveCard('💿','DVD ドライブ (E:)','ディスクなし','')
+        +_driveCard('💾','フロッピー (A:)','1.44 MB','')
+      +'</div>'
+    +'</div>'
+  +'</div>';
   _wCreate('mypc','マイコンピュータ','🖥',html,640,440);
   _wSetMenu('mypc',[
     {label:'ファイル',items:['---',{label:'閉じる',fn:'_wCloseFromMenu'}]},
@@ -430,7 +414,7 @@ function _driveCard(ic,name,info,fn){
 }
 window._wCloseFromMenu = function(id) { wClose(id); };
 
-// Cドライブ（フォルダ一覧）
+// Cドライブ(フォルダ一覧)
 window.wOpen_cdrive = function() {
   var html='<div style="display:flex;height:100%;font-size:12px">'+
     '<div style="width:160px;background:linear-gradient(180deg,#dce8fc,#c5d8f8);border-right:1px solid #aab8d8;padding:8px;flex-shrink:0">'+
@@ -527,7 +511,6 @@ window.wOpen_notepad = function(file) {
 // ── インターネットExplorer ──
 window.wOpen_ie = function() {
   var html='<div style="display:flex;flex-direction:column;height:100%;background:#fff">'+
-    // ツールバー
     '<div style="background:linear-gradient(180deg,#e8e8e8,#d0d0d0);padding:4px 6px;display:flex;align-items:center;gap:4px;border-bottom:1px solid #aaa">'+
       '<button class="wie-btn" onclick="document.getElementById(\'ie-f\').contentWindow.history.back()">◀ 戻る</button>'+
       '<button class="wie-btn" onclick="document.getElementById(\'ie-f\').contentWindow.history.forward()">▶ 進む</button>'+
@@ -539,7 +522,6 @@ window.wOpen_ie = function() {
       '</div>'+
       '<button class="wie-btn" onclick="ieNav(document.getElementById(\'ie-u\').value)" style="padding:2px 12px">移動(G) →</button>'+
     '</div>'+
-    // リンクバー
     '<div style="background:#d8e4f8;padding:2px 8px;font-size:11px;border-bottom:1px solid #b0c0d8;display:flex;gap:14px;align-items:center">'+
       '<span style="color:#555">リンク(L):</span>'+
       ['MSN','Google','Wikipedia','Yahoo! JAPAN','YouTube'].map(function(s,i){
@@ -547,9 +529,7 @@ window.wOpen_ie = function() {
         return '<span onclick="ieNav(\''+urls[i]+'\')" style="color:#00008b;cursor:pointer;text-decoration:underline;font-size:11px">'+s+'</span>';
       }).join('')+
     '</div>'+
-    // フレーム
     '<iframe id="ie-f" style="flex:1;border:none" src="about:blank"></iframe>'+
-    // ステータスバー
     '<div style="background:linear-gradient(180deg,#d0d0d0,#b8b8b8);padding:2px 8px;font-size:11px;color:#444;display:flex;justify-content:space-between;border-top:1px solid #aaa">'+
       '<span id="ie-status">完了</span><span>🌐 インターネット | 保護モード: オフ</span>'+
     '</div>'+
@@ -582,7 +562,6 @@ window.wOpen_paint = function() {
   var tools=[['✏️','pen'],['📤','eraser'],['🪣','fill'],['╱','line'],['⬜','rect'],['⭕','ellipse'],['A','text']];
   var toolBtns=tools.map(function(t){return '<button onclick="window._wpT=\''+t[1]+'\'" title="'+t[1]+'" style="width:26px;height:26px;background:linear-gradient(180deg,#f0f0f0,#d0d0d0);border:1px solid #808080;cursor:pointer;border-radius:2px;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0">'+t[0]+'</button>';}).join('');
   var html='<div style="display:flex;flex-direction:column;height:100%;background:#c0c0c0">'+
-    // ツールバー
     '<div style="background:#c0c0c0;border-bottom:1px solid #808080;padding:2px 4px;display:flex;align-items:center;gap:4px">'+
       '<span style="font-size:11px">太さ:</span>'+
       '<input type="range" id="wp-sz" min="1" max="40" value="3" style="width:70px;accent-color:#0078d4">'+
@@ -592,14 +571,11 @@ window.wOpen_paint = function() {
       '<button onclick="var a=document.createElement(\'a\');a.href=document.getElementById(\'wp-cv\').toDataURL();a.download=\'drawing.png\';a.click()" style="font-size:11px;padding:2px 8px;border:1px solid #808080;background:#c0c0c0;cursor:pointer;border-radius:2px">💾 保存</button>'+
     '</div>'+
     '<div style="display:flex;flex:1;overflow:hidden">'+
-      // ツールボックス
       '<div style="width:32px;background:#c0c0c0;border-right:1px solid #808080;padding:3px 2px;display:flex;flex-direction:column;gap:2px;align-items:center">'+toolBtns+'</div>'+
-      // キャンバス
       '<div style="flex:1;overflow:auto;background:#808080;display:flex;align-items:flex-start;justify-content:flex-start;padding:8px">'+
         '<canvas id="wp-cv" width="680" height="460" style="background:white;cursor:crosshair;display:block;box-shadow:2px 2px 4px rgba(0,0,0,.4)"></canvas>'+
       '</div>'+
     '</div>'+
-    // パレット
     '<div style="height:28px;display:flex;align-items:center;gap:1px;padding:4px;border-top:1px solid #808080;background:#c0c0c0;overflow:hidden">'+
       palette+
     '</div>'+
@@ -778,21 +754,18 @@ window.wOpen_cmd = function() {
 // ── Media Player ──
 window.wOpen_media = function() {
   var tracks=[{t:'Windows XP起動音',a:'Microsoft',d:'0:05'},{t:'田園',a:'ベートーヴェン',d:'3:45'},{t:'月の光',a:'ドビュッシー',d:'5:12'},{t:'ノクターン Op.9 No.2',a:'ショパン',d:'4:33'}];
-  var list=tracks.map(function(t,i){return '<div onclick="wmpPlay('+i+')" style="display:flex;align-items:center;gap:10px;padding:6px 10px;cursor:pointer;border-bottom:1px solid #2a2a2a" onmouseover="this.style.background=\'#2a2a4a\'" onmouseout="this.style.background=\'\'" id="wmp-tr-'+i+'"><span style="color:#888;font-size:11px;width:20px;text-align:right">'+（i+1）+'</span><div style="flex:1"><div style="font-size:13px;color:#ddd">'+t.t+'</div><div style="font-size:11px;color:#888">'+t.a+'</div></div><span style="font-size:11px;color:#888">'+t.d+'</span></div>';}).join('');
+  var list=tracks.map(function(t,i){return '<div onclick="wmpPlay('+i+')" style="display:flex;align-items:center;gap:10px;padding:6px 10px;cursor:pointer;border-bottom:1px solid #2a2a2a" onmouseover="this.style.background=\'#2a2a4a\'" onmouseout="this.style.background=\'\'" id="wmp-tr-'+i+'"><span style="color:#888;font-size:11px;width:20px;text-align:right">'+(i+1)+'</span><div style="flex:1"><div style="font-size:13px;color:#ddd">'+t.t+'</div><div style="font-size:11px;color:#888">'+t.a+'</div></div><span style="font-size:11px;color:#888">'+t.d+'</span></div>';}).join('');
   var html='<div style="display:flex;flex-direction:column;height:100%;background:#1a1a2e">'+
     '<div style="flex:1;display:flex">'+
-      // ビジュアライザ
       '<div style="flex:1;background:#0d0d1a;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative">'+
         '<canvas id="wmp-vis" width="300" height="120" style="display:block"></canvas>'+
         '<div id="wmp-info" style="text-align:center;margin-top:10px"><div id="wmp-title" style="font-size:16px;color:#ddd">Windows Media Player</div><div id="wmp-artist" style="font-size:12px;color:#888">曲を選択してください</div></div>'+
       '</div>'+
-      // プレイリスト
       '<div style="width:220px;background:#111118;border-left:1px solid #333;overflow-y:auto">'+
         '<div style="padding:6px 10px;font-size:10px;font-weight:700;color:#666;text-transform:uppercase;border-bottom:1px solid #2a2a2a">プレイリスト</div>'+
         list+
       '</div>'+
     '</div>'+
-    // コントロール
     '<div style="background:#111118;border-top:1px solid #333;padding:10px 14px">'+
       '<div style="display:flex;align-items:center;gap:4px;margin-bottom:8px">'+
         '<span id="wmp-cur" style="font-size:11px;color:#888">0:00</span>'+
