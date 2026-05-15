@@ -60,118 +60,61 @@
 <body>
 
 <!-- ══ BOOT ══ -->
+
+<!-- ══ OS SELECTOR ══ -->
+<div id="os-select" style="position:fixed;inset:0;z-index:99997;background:rgba(0,0,0,.92);display:none;flex-direction:column;align-items:center;justify-content:center;gap:32px">
+  <div style="text-align:center">
+    <div style="font-size:13px;font-weight:500;color:rgba(255,255,255,.4);letter-spacing:3px;text-transform:uppercase;margin-bottom:8px">UtiloHub Virtualization</div>
+    <div style="font-size:34px;font-weight:300;color:white;letter-spacing:-1px">仮想マシンの作成</div>
+    <div style="font-size:15px;color:rgba(255,255,255,.4);margin-top:8px">起動するオペレーティングシステムを選択してください</div>
+  </div>
+  <div style="display:flex;gap:20px" id="os-cards">
+    <div id="osc-mac" onclick="selectOS('mac')" style="width:200px;padding:28px 20px;border-radius:18px;cursor:pointer;border:2px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);backdrop-filter:blur(20px);text-align:center;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:12px" onmouseover="this.style.borderColor='rgba(255,255,255,.35)';this.style.background='rgba(255,255,255,.1)';this.style.transform='translateY(-4px)'" onmouseout="if(window._selOS!=='mac'){this.style.borderColor='rgba(255,255,255,.1)';this.style.background='rgba(255,255,255,.05)';this.style.transform=''}">
+      <svg width="52" height="52" viewBox="0 0 814 1000" fill="white"><path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105.2-57.8-155.5-127.4C46 424.8 0 301.9 0 185.4c0-127.6 65.1-195.3 196.4-195.3 74.9 0 128.9 38.4 171.5 38.4 40.8 0 107.6-40.8 191.6-40.8 30.2 0 110.6 2.6 168.3 89.3zm-171.7-109.9c-37.9-44.9-94.1-77.4-148.2-77.4-7.1 0-14.2.6-21.3 1.9 2.6 36.2 18.8 71.3 41.9 96.8 37.9 44.3 96.8 77.4 152.3 77.4 6.4 0 12.8-.6 19.2-1.9-2.6-38.4-21.3-73.5-43.9-96.8z"/></svg>
+      <div style="font-size:17px;font-weight:600;color:white">macOS</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.4);line-height:1.5">UtiloHub macOS<br>Ventura 風デザイン</div>
+      <div style="font-size:11px;color:#30d158;margin-top:4px">✓ 起動中</div>
+    </div>
+    <div id="osc-win" onclick="selectOS('win')" style="width:200px;padding:28px 20px;border-radius:18px;cursor:pointer;border:2px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);backdrop-filter:blur(20px);text-align:center;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:12px" onmouseover="this.style.borderColor='rgba(255,255,255,.35)';this.style.background='rgba(255,255,255,.1)';this.style.transform='translateY(-4px)'" onmouseout="if(window._selOS!=='win'){this.style.borderColor='rgba(255,255,255,.1)';this.style.background='rgba(255,255,255,.05)';this.style.transform=''}">
+      <svg width="52" height="52" viewBox="0 0 88 88"><rect x="2" y="2" width="38" height="38" rx="4" fill="#F25022"/><rect x="48" y="2" width="38" height="38" rx="4" fill="#7FBA00"/><rect x="2" y="48" width="38" height="38" rx="4" fill="#00A4EF"/><rect x="48" y="48" width="38" height="38" rx="4" fill="#FFB900"/></svg>
+      <div style="font-size:17px;font-weight:600;color:white">Windows XP</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.4);line-height:1.5">Windows XP SP3<br>Professional 32bit</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.3);margin-top:4px">○ 停止中</div>
+    </div>
+  </div>
+  <div style="display:flex;gap:12px;align-items:center">
+    <button onclick="closeOSSelect()" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.6);padding:10px 28px;border-radius:10px;font-size:14px;cursor:pointer">キャンセル</button>
+    <button id="os-boot-btn" onclick="bootSelectedOS()" style="display:none;background:#0071e3;border:none;color:white;padding:10px 32px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s" onmouseover="this.style.background='#0077ed'" onmouseout="this.style.background='#0071e3'">▶ 起動する</button>
+  </div>
+</div>
+
+<!-- ══ VM BOOT ANIMATION ══ -->
+<div id="vm-boot" style="position:fixed;inset:0;z-index:99998;background:#1a1a1a;display:none;flex-direction:column;align-items:center;justify-content:center;font-family:-apple-system,'Inter',sans-serif">
+  <!-- Parallels風タイトルバー -->
+  <div style="position:absolute;top:0;left:0;right:0;height:28px;background:#252525;display:flex;align-items:center;padding:0 14px;gap:8px;border-bottom:1px solid #3a3a3a">
+    <div style="width:12px;height:12px;border-radius:50%;background:#ff5f57"></div>
+    <div style="width:12px;height:12px;border-radius:50%;background:#febc2e"></div>
+    <div style="width:12px;height:12px;border-radius:50%;background:#28c840"></div>
+    <span id="vmb-title" style="font-size:12px;color:rgba(255,255,255,.5);margin-left:8px">UtiloHub — 仮想マシン起動中</span>
+  </div>
+  <!-- コンテンツ -->
+  <div id="vmb-icon" style="margin-bottom:20px"></div>
+  <div id="vmb-label" style="font-size:20px;color:rgba(255,255,255,.9);font-weight:300;margin-bottom:6px">仮想マシンを起動しています</div>
+  <div id="vmb-sub" style="font-size:13px;color:rgba(255,255,255,.4);margin-bottom:28px">しばらくお待ちください...</div>
+  <!-- ログ -->
+  <div id="vmb-log" style="width:480px;height:110px;overflow:hidden;font-family:'JetBrains Mono',Menlo,monospace;font-size:11px;color:#30d158;line-height:1.7;text-align:left;margin-bottom:24px;padding:10px;background:rgba(0,0,0,.4);border-radius:8px;border:1px solid rgba(255,255,255,.06)"></div>
+  <!-- プログレスバー -->
+  <div style="width:320px;height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden">
+    <div id="vmb-bar" style="height:100%;width:0%;border-radius:3px;transition:width .15s ease"></div>
+  </div>
+  <div id="vmb-pct" style="font-size:12px;color:rgba(255,255,255,.35);margin-top:10px">0%</div>
+</div>
+
 <div id="boot-screen">
   <svg class="boot-apple" viewBox="0 0 814 1000" fill="white">
     <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105.2-57.8-155.5-127.4C46 424.8 0 301.9 0 185.4c0-127.6 65.1-195.3 196.4-195.3 74.9 0 128.9 38.4 171.5 38.4 40.8 0 107.6-40.8 191.6-40.8 30.2 0 110.6 2.6 168.3 89.3zm-171.7-109.9c-37.9-44.9-94.1-77.4-148.2-77.4-7.1 0-14.2.6-21.3 1.9 2.6 36.2 18.8 71.3 41.9 96.8 37.9 44.3 96.8 77.4 152.3 77.4 6.4 0 12.8-.6 19.2-1.9-2.6-38.4-21.3-73.5-43.9-96.8z"/>
   </svg>
   <div class="boot-bar-wrap"><div class="boot-bar-fill" id="boot-progress"></div></div>
-</div>
-
-<!-- ══ OS SELECTOR ══ -->
-<div id="os-select">
-  <div class="os-title">仮想マシンの作成</div>
-  <div class="os-subtitle">起動するオペレーティングシステムを選択してください</div>
-  <div class="os-cards">
-    <div class="os-card" id="os-mac" onclick="selectOS('mac')">
-      <div class="os-card-icon">
-        <svg width="56" height="56" viewBox="0 0 814 1000" fill="white">
-          <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105.2-57.8-155.5-127.4C46 424.8 0 301.9 0 185.4c0-127.6 65.1-195.3 196.4-195.3 74.9 0 128.9 38.4 171.5 38.4 40.8 0 107.6-40.8 191.6-40.8 30.2 0 110.6 2.6 168.3 89.3zm-171.7-109.9c-37.9-44.9-94.1-77.4-148.2-77.4-7.1 0-14.2.6-21.3 1.9 2.6 36.2 18.8 71.3 41.9 96.8 37.9 44.3 96.8 77.4 152.3 77.4 6.4 0 12.8-.6 19.2-1.9-2.6-38.4-21.3-73.5-43.9-96.8z"/>
-        </svg>
-      </div>
-      <div class="os-card-name">macOS</div>
-      <div class="os-card-desc">UtiloHub macOS<br>Ventura風デザイン</div>
-    </div>
-    <div class="os-card" id="os-win" onclick="selectOS('win')">
-      <div class="os-card-icon">
-        <svg width="56" height="56" viewBox="0 0 88 88" fill="none">
-          <rect x="2" y="2" width="38" height="38" fill="#F25022"/>
-          <rect x="48" y="2" width="38" height="38" fill="#7FBA00"/>
-          <rect x="2" y="48" width="38" height="38" fill="#00A4EF"/>
-          <rect x="48" y="48" width="38" height="38" fill="#FFB900"/>
-        </svg>
-      </div>
-      <div class="os-card-name">Windows</div>
-      <div class="os-card-desc">Windows 95風<br>クラシックデスクトップ</div>
-    </div>
-  </div>
-  <button class="os-start-btn" id="os-start-btn" onclick="startVM()">仮想マシンを起動 →</button>
-</div>
-
-<!-- ══ VM BOOT ANIMATION ══ -->
-<div id="vm-screen">
-  <div class="vm-titlebar">
-    <div class="vm-tl" style="background:#ff5f57"></div>
-    <div class="vm-tl" style="background:#febc2e"></div>
-    <div class="vm-tl" style="background:#28c840"></div>
-    <span style="font-size:12px;color:rgba(255,255,255,.5);margin-left:8px" id="vm-titlebar-text">UtiloHub — 仮想マシン起動中</span>
-  </div>
-  <div id="vm-os-icon" style="margin-bottom:20px"></div>
-  <div class="vm-title" id="vm-title-text">仮想マシンを起動しています</div>
-  <div class="vm-sub"  id="vm-sub-text">しばらくお待ちください...</div>
-  <div class="vm-log"  id="vm-log"></div>
-  <div class="vm-bar-wrap"><div class="vm-bar-fill" id="vm-progress"></div></div>
-  <div class="vm-pct"  id="vm-pct">0%</div>
-</div>
-
-<!-- ══ WINDOWS XP VM ══ -->
-<div id="win-vm" style="position:fixed;inset:0;z-index:500;display:none;flex-direction:column">
-  <!-- Desktop area -->
-  <div id="win-vm-desktop">
-    <!-- XP Bliss-like background hills drawn in CSS -->
-    <div style="position:absolute;bottom:0;left:0;right:0;height:45%;background:linear-gradient(180deg,#4aaa24 0%,#3a8a1c 100%);border-radius:100% 100% 0 0 / 30px 30px 0 0"></div>
-    <!-- Desktop icons -->
-    <div id="win-icon-area"></div>
-    <!-- Window area -->
-    <div id="win-desktop-area" style="position:absolute;inset:0"></div>
-    <!-- Start Menu -->
-    <div id="win-start-menu">
-      <div class="win-sm-header">
-        <div class="win-sm-avatar" id="win-sm-av">😊</div>
-        <div class="win-sm-name" id="win-sm-name">ゲスト</div>
-      </div>
-      <div class="win-sm-body">
-        <div class="win-sm-left">
-          <div class="win-sm-section">最近使ったもの</div>
-          <div class="win-sm-item" onclick="winToggleStart();winOpenIE()"><span style="font-size:22px">🌐</span><div><span>Internet Explorer</span><span class="win-sm-sub">Webブラウザ</span></div></div>
-          <div class="win-sm-item" onclick="winToggleStart();winOpenNotepad()"><span style="font-size:22px">📄</span><div><span>メモ帳</span><span class="win-sm-sub">テキストエディタ</span></div></div>
-          <div class="win-sm-item" onclick="winToggleStart();winOpenPaint()"><span style="font-size:22px">🎨</span><div><span>ペイント</span><span class="win-sm-sub">画像エディタ</span></div></div>
-          <div class="win-sm-item" onclick="winToggleStart();winOpenCalc()"><span style="font-size:22px">🧮</span><div><span>電卓</span><span class="win-sm-sub">計算機</span></div></div>
-          <div class="win-sm-sep"></div>
-          <div class="win-sm-item" onclick="winToggleStart();winOpenCmd()"><span style="font-size:22px">🖤</span><div><span>コマンドプロンプト</span><span class="win-sm-sub">cmd.exe</span></div></div>
-        </div>
-        <div class="win-sm-right">
-          <div class="win-sm-section">場所</div>
-          <div class="win-sm-item" onclick="winToggleStart();winOpenDocs()"><span style="font-size:22px">📁</span><span>マイドキュメント</span></div>
-          <div class="win-sm-item" onclick="winToggleStart();winOpenMyPC()"><span style="font-size:22px">🖥</span><span>マイコンピュータ</span></div>
-          <div class="win-sm-item" onclick="winToggleStart();winOpenTrash()"><span style="font-size:22px">🗑</span><span>ごみ箱</span></div>
-          <div class="win-sm-sep"></div>
-          <div class="win-sm-section">コントロールパネル</div>
-          <div class="win-sm-item" onclick="winToggleStart();alert('コントロールパネル')"><span style="font-size:22px">⚙️</span><span>コントロールパネル</span></div>
-          <div class="win-sm-item" onclick="winToggleStart();alert('検索')"><span style="font-size:22px">🔍</span><span>検索(S)</span></div>
-          <div class="win-sm-item" onclick="winToggleStart();alert('ヘルプ')"><span style="font-size:22px">❓</span><span>ヘルプとサポート</span></div>
-        </div>
-      </div>
-      <div class="win-sm-footer">
-        <button class="win-sm-foot-btn" onclick="winToggleStart();alert('ログオフ')">🔄 ログオフ</button>
-        <button class="win-sm-foot-btn" onclick="winToggleStart();closeWinVM()">⏻ 終了</button>
-      </div>
-    </div>
-    <!-- Return to UtiloHub -->
-    <button id="win-return-btn" onclick="closeWinVM()">✕ UtiloHubに戻る</button>
-  </div>
-  <!-- XP Taskbar -->
-  <div id="win-taskbar-xp">
-    <button id="win-start-btn" onclick="winToggleStart()">
-      <svg width="18" height="18" viewBox="0 0 88 88"><rect x="2" y="2" width="38" height="38" fill="#F25022"/><rect x="48" y="2" width="38" height="38" fill="#7FBA00"/><rect x="2" y="48" width="38" height="38" fill="#00A4EF"/><rect x="48" y="48" width="38" height="38" fill="#FFB900"/></svg>
-      スタート
-    </button>
-    <div id="win-taskbar-btns"></div>
-    <div id="win-tray">
-      <span style="font-size:16px">🔊</span>
-      <span style="font-size:16px">🌐</span>
-      <div id="win-clock-xp"></div>
-    </div>
-  </div>
 </div>
 
 <!-- ══ SETUP WIZARD ══ -->
@@ -311,13 +254,102 @@
     <div class="dock-sep"></div>
     <div class="dock-icon" onclick="openTerminal()"><div class="di-img" style="background:linear-gradient(145deg,#1c1c1e,#0d0d0d);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:30px">💻</div><div class="dock-tooltip">ターミナル</div><div class="dock-dot" id="dot-terminal"></div></div>
     <div class="dock-icon" onclick="openFiles()"><div class="di-img" style="background:linear-gradient(145deg,#0071e3,#0051a8);display:flex;align-items:center;justify-content:center;font-size:30px">📁</div><div class="dock-tooltip">ファイル</div><div class="dock-dot" id="dot-files"></div></div>
-    <div class="dock-icon" onclick="launchVM()"><div class="di-img" style="background:linear-gradient(145deg,#ff9f0a,#e67e00);display:flex;align-items:center;justify-content:center;font-size:24px">⊞</div><div class="dock-tooltip">仮想マシン</div><div class="dock-dot" id="dot-vm"></div></div>
+    <div class="dock-icon" onclick="showOSSelect()"><div class="di-img" style="background:linear-gradient(145deg,#ff9f0a,#e67e00);display:flex;align-items:center;justify-content:center;font-size:24px">⊞</div><div class="dock-tooltip">仮想マシン</div><div class="dock-dot" id="dot-vm"></div></div>
     <div class="dock-icon" onclick="openSettings()"><div class="di-img" style="background:linear-gradient(145deg,#636366,#48484a);display:flex;align-items:center;justify-content:center;font-size:30px">⚙️</div><div class="dock-tooltip">設定</div><div class="dock-dot" id="dot-settings"></div></div>
   </div>
 </div>
 
 <!-- ══ SCRIPTS ══ -->
 <script>
+// ── VM / OS Select ──
+window._selOS = null;
+window.showOSSelect = function() {
+  var el = document.getElementById('os-select');
+  if(el){ el.style.display='flex'; }
+};
+window.closeOSSelect = function() {
+  var el = document.getElementById('os-select');
+  if(el){ el.style.display='none'; }
+};
+window.selectOS = function(os) {
+  window._selOS = os;
+  document.querySelectorAll('#os-cards > div').forEach(function(c){
+    c.style.borderColor='rgba(255,255,255,.1)';
+    c.style.background='rgba(255,255,255,.05)';
+    c.style.transform='';
+  });
+  var card = document.getElementById('osc-'+os);
+  if(card){ card.style.borderColor='#0071e3'; card.style.background='rgba(0,113,227,.15)'; }
+  var btn = document.getElementById('os-boot-btn');
+  if(btn){ btn.style.display='block'; btn.textContent='▶ '+(os==='win'?'Windows XP':'macOS')+' を起動する'; }
+};
+window.bootSelectedOS = function() {
+  var os = window._selOS; if(!os) return;
+  closeOSSelect();
+  // 起動アニメーション開始
+  var vb = document.getElementById('vm-boot');
+  if(!vb) return;
+  vb.style.display='flex'; vb.style.opacity='0';
+  setTimeout(function(){ vb.style.transition='opacity .3s'; vb.style.opacity='1'; },10);
+
+  var icon=document.getElementById('vmb-icon');
+  var bar =document.getElementById('vmb-bar');
+  var lbl =document.getElementById('vmb-label');
+  var sub =document.getElementById('vmb-sub');
+  var ttl =document.getElementById('vmb-title');
+  var logEl=document.getElementById('vmb-log');
+  var pctEl=document.getElementById('vmb-pct');
+
+  if(os==='win'){
+    icon.innerHTML='<svg width="56" height="56" viewBox="0 0 88 88"><rect x="2" y="2" width="38" height="38" rx="4" fill="#F25022"/><rect x="48" y="2" width="38" height="38" rx="4" fill="#7FBA00"/><rect x="2" y="48" width="38" height="38" rx="4" fill="#00A4EF"/><rect x="48" y="48" width="38" height="38" rx="4" fill="#FFB900"/></svg>';
+    bar.style.background='linear-gradient(90deg,#0078d4,#00bcf2)';
+    lbl.textContent='Windows XP Professional を起動しています';
+    sub.textContent='仮想マシンを初期化しています...';
+    ttl.textContent='UtiloHub — Windows XP 仮想マシン';
+  } else {
+    icon.innerHTML='<svg width="56" height="56" viewBox="0 0 814 1000" fill="white"><path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105.2-57.8-155.5-127.4C46 424.8 0 301.9 0 185.4c0-127.6 65.1-195.3 196.4-195.3 74.9 0 128.9 38.4 171.5 38.4 40.8 0 107.6-40.8 191.6-40.8 30.2 0 110.6 2.6 168.3 89.3zm-171.7-109.9c-37.9-44.9-94.1-77.4-148.2-77.4-7.1 0-14.2.6-21.3 1.9 2.6 36.2 18.8 71.3 41.9 96.8 37.9 44.3 96.8 77.4 152.3 77.4 6.4 0 12.8-.6 19.2-1.9-2.6-38.4-21.3-73.5-43.9-96.8z"/></svg>';
+    bar.style.background='linear-gradient(90deg,#0071e3,#30c4ff)';
+    lbl.textContent='macOS Ventura を起動しています';
+    sub.textContent='仮想マシンを初期化しています...';
+    ttl.textContent='UtiloHub — macOS 仮想マシン';
+  }
+
+  var winLogs=['BIOS v2.0 - UtiloHub Virtual Machine','Detecting hardware...','IDE controller: initialized','PCI bus: 4 devices found','Memory test: 1024MB OK','Loading NTLDR...','Windows is loading files...','NTFS volume: mounted OK','hal.dll: loaded','kernel32.dll: initialized','Loading device drivers...','Starting user services...','Applying your personal settings...','Loading desktop...','Windows XP is ready.'];
+  var macLogs=['EFI stub: Booting from APFS volume...','AppleACPIPlatform: Init complete','IOPCIFamily: version 2.9 loaded','com.apple.driver.AppleHDA: version 3.8.0 loaded','AppleSMC: SMCFirmware loaded OK','IOAHCIBlockStorage: initialized','com.apple.kext.triggers: loaded','WindowServer: started (display 0)','loginwindow: session started','Dock: process started','Finder: process started','SystemUIServer: started','macOS is ready.'];
+  var logs = os==='win' ? winLogs : macLogs;
+  var pct=0, li=0;
+  logEl.innerHTML='';
+
+  var iv=setInterval(function(){
+    pct += Math.random()*5+2;
+    if(pct>98) pct=98;
+    bar.style.width=pct+'%';
+    pctEl.textContent=Math.floor(pct)+'%';
+    if(li<logs.length){
+      var line=document.createElement('div');
+      line.textContent=(os==='win'?'':'[OK] ')+logs[li++];
+      line.style.opacity='0'; line.style.transition='opacity .25s';
+      logEl.appendChild(line);
+      setTimeout(function(){line.style.opacity='1';},30);
+      logEl.scrollTop=logEl.scrollHeight;
+    }
+    if(pct>=98){
+      clearInterval(iv); pct=100; bar.style.width='100%'; pctEl.textContent='100%';
+      setTimeout(function(){
+        vb.style.transition='opacity .4s'; vb.style.opacity='0';
+        setTimeout(function(){
+          vb.style.display='none'; vb.style.opacity='1';
+          if(os==='win') {
+            if(window.launchWindowsVM) launchWindowsVM();
+          } else {
+            window.UH&&UH.notify('macOS VM 起動完了','仮想マシンが起動しました','🍎','#0071e3');
+          }
+        },400);
+      },800);
+    }
+  },180);
+};
+
 // Boot progress
 (function(){
   var p=document.getElementById('boot-progress'),pct=0;
@@ -367,91 +399,6 @@
 
 // ── OS Selector ──
 window._selectedOS=null;
-window.selectOS=function(os){
-  window._selectedOS=os;
-  document.querySelectorAll('.os-card').forEach(function(c){c.classList.remove('selected');});
-  document.getElementById('os-'+os).classList.add('selected');
-  var btn=document.getElementById('os-start-btn');
-  btn.classList.add('show');
-  btn.textContent=(os==='mac'?'macOS':'Windows')+' 仮想マシンを起動 →';
-};
-
-window.launchVM=function(){
-  var sel=document.getElementById('os-select');
-  sel.style.display='flex';
-};
-
-window.startVM=function(){
-  var os=window._selectedOS;if(!os)return;
-  document.getElementById('os-select').style.display='none';
-  var vm=document.getElementById('vm-screen');
-  vm.style.display='flex';
-
-  // Set icon & colors
-  var icon=document.getElementById('vm-os-icon');
-  var bar=document.getElementById('vm-progress');
-  var ttl=document.getElementById('vm-titlebar-text');
-  var vtl=document.getElementById('vm-title-text');
-  var vsub=document.getElementById('vm-sub-text');
-
-  if(os==='mac'){
-    icon.innerHTML='<svg width="52" height="52" viewBox="0 0 814 1000" fill="white"><path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105.2-57.8-155.5-127.4C46 424.8 0 301.9 0 185.4c0-127.6 65.1-195.3 196.4-195.3 74.9 0 128.9 38.4 171.5 38.4 40.8 0 107.6-40.8 191.6-40.8 30.2 0 110.6 2.6 168.3 89.3zm-171.7-109.9c-37.9-44.9-94.1-77.4-148.2-77.4-7.1 0-14.2.6-21.3 1.9 2.6 36.2 18.8 71.3 41.9 96.8 37.9 44.3 96.8 77.4 152.3 77.4 6.4 0 12.8-.6 19.2-1.9-2.6-38.4-21.3-73.5-43.9-96.8z"/></svg>';
-    bar.style.background='linear-gradient(90deg,#0071e3,#30c4ff)';
-    ttl.textContent='UtiloHub — macOS 仮想マシン起動中';
-    vtl.textContent='macOS を起動しています';
-    vsub.textContent='仮想マシンを初期化しています...';
-  } else {
-    icon.innerHTML='<svg width="52" height="52" viewBox="0 0 88 88"><rect x="2" y="2" width="38" height="38" fill="#F25022"/><rect x="48" y="2" width="38" height="38" fill="#7FBA00"/><rect x="2" y="48" width="38" height="38" fill="#00A4EF"/><rect x="48" y="48" width="38" height="38" fill="#FFB900"/></svg>';
-    bar.style.background='linear-gradient(90deg,#0078d4,#00bcf2)';
-    ttl.textContent='UtiloHub — Windows 仮想マシン起動中';
-    vtl.textContent='Windows を起動しています';
-    vsub.textContent='Starting Windows...';
-  }
-
-  // VM log lines
-  var macLogs=['EFI stub: Booting from APFS volume...','AppleACPIPlatform: Init complete','IOPCIFamily: version 2.9 loaded','com.apple.driver.AppleHDA: version 3.8.0','AppleSMC: Loaded OK','WindowServer: started','loginwindow: Welcome back','Dock: initialized','Finder: started'];
-  var winLogs=['Windows is loading files...','Starting Windows...','NTFS volume mounted successfully','hal.dll loaded','kernel32.dll initialized','Loading device drivers...','Starting user session...','Applying your personal settings...','Loading desktop...'];
-  var logs=os==='mac'?macLogs:winLogs;
-  var logEl=document.getElementById('vm-log');
-  var pct=0,li=0;
-  logEl.innerHTML='';
-
-  var iv=setInterval(function(){
-    pct+=Math.random()*8+3;
-    if(pct>98)pct=98;
-    bar.style.width=pct+'%';
-    document.getElementById('vm-pct').textContent=Math.floor(pct)+'%';
-    if(li<logs.length){
-      var line=document.createElement('div');
-      line.textContent=(os==='mac'?'':'> ')+logs[li++];
-      line.style.opacity='0';line.style.transition='opacity .3s';
-      logEl.appendChild(line);
-      setTimeout(function(){line.style.opacity='1';},50);
-      logEl.scrollTop=logEl.scrollHeight;
-    }
-    if(pct>=98){
-      clearInterval(iv);pct=100;bar.style.width='100%';
-      document.getElementById('vm-pct').textContent='100%';
-      setTimeout(function(){
-        vm.style.transition='opacity .4s';vm.style.opacity='0';
-        setTimeout(function(){
-          vm.style.display='none';vm.style.opacity='1';
-          if(os==='win'){
-            document.getElementById('win-vm').style.display='flex';
-            var smav=document.getElementById('win-sm-av');var smn=document.getElementById('win-sm-name');
-            var av=localStorage.getItem('uh2_setup_av')||'😊';var nm=localStorage.getItem('uh2_setup_name')||'ゲスト';
-            if(smav)smav.textContent=av;if(smn)smn.textContent=nm;
-            if(window.winInitDesktop)winInitDesktop();
-            setInterval(function(){var c=document.getElementById('win-clock-xp');if(c){var n=new Date();c.innerHTML=n.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})+'<br><span style=\"font-size:10px\">'+n.toLocaleDateString('ja-JP',{month:'2-digit',day:'2-digit'})+'</span>';}},1000);
-          } else {
-            window.UH&&UH.notify('macOS VM 起動完了','仮想マシンが起動しました','🍎','#0071e3');
-          }
-        },400);
-      },800);
-    }
-  },200);
-};
-
 window.closeWinVM=function(){
   document.getElementById('win-vm').style.display='none';
 };
