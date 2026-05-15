@@ -138,7 +138,7 @@
           <div style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:8px 16px;font-size:12px;color:rgba(255,255,255,.6)">🎮 DirectX 9</div>
         </div>
         <div style="background:rgba(99,99,102,.15);border:1px solid rgba(99,99,102,.3);border-radius:10px;padding:10px 20px;font-size:13px;color:#aeaeb2">● 停止中</div>
-        <button onclick="bootSelectedOS()" style="background:#0071e3;border:none;color:white;padding:12px 36px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;font-family:inherit">
+        <button onclick="window._selOS='win';bootSelectedOS()" style="background:#0071e3;border:none;color:white;padding:12px 36px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;font-family:inherit">
           <svg width="14" height="14" viewBox="0 0 88 88"><rect x="2" y="2" width="38" height="38" rx="4" fill="#F25022"/><rect x="48" y="2" width="38" height="38" rx="4" fill="#7FBA00"/><rect x="2" y="48" width="38" height="38" rx="4" fill="#00A4EF"/><rect x="48" y="48" width="38" height="38" rx="4" fill="#FFB900"/></svg>
           Windows XP を起動する
         </button>
@@ -510,7 +510,7 @@ onAuthStateChanged(auth,user=>{
 <script type="module" src="js/core.js"></script>
 <script type="module" src="apps/tools.js"></script>
 <script type="module" src="apps/productivity.js"></script>
-<script type="module" src="apps/windows_vm.js"></script>
+<script src="apps/windows_vm.js"></script>
 
 <!-- Safari Browser App -->
 <script type="module">
