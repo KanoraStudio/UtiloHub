@@ -113,25 +113,65 @@
   <div class="vm-pct"  id="vm-pct">0%</div>
 </div>
 
-<!-- ══ WINDOWS VM DESKTOP ══ -->
-<div id="win-vm">
-  <div style="position:absolute;inset:0;background:linear-gradient(135deg,#008080,#006060)"></div>
-  <div class="win-desktop-icons">
-    <div class="win-icon" ondblclick="alert('マイコンピュータ')"><span>🖥️</span><span>マイコンピュータ</span></div>
-    <div class="win-icon" ondblclick="alert('ごみ箱')"><span>🗑️</span><span>ごみ箱</span></div>
-    <div class="win-icon" ondblclick="alert('Internet Explorer')"><span>🌐</span><span>Internet Explorer</span></div>
-    <div class="win-icon" ondblclick="winNotepad()"><span>📄</span><span>メモ帳</span></div>
+<!-- ══ WINDOWS XP VM ══ -->
+<div id="win-vm" style="position:fixed;inset:0;z-index:500;display:none;flex-direction:column">
+  <!-- Desktop area -->
+  <div id="win-vm-desktop">
+    <!-- XP Bliss-like background hills drawn in CSS -->
+    <div style="position:absolute;bottom:0;left:0;right:0;height:45%;background:linear-gradient(180deg,#4aaa24 0%,#3a8a1c 100%);border-radius:100% 100% 0 0 / 30px 30px 0 0"></div>
+    <!-- Desktop icons -->
+    <div id="win-icon-area"></div>
+    <!-- Window area -->
+    <div id="win-desktop-area" style="position:absolute;inset:0"></div>
+    <!-- Start Menu -->
+    <div id="win-start-menu">
+      <div class="win-sm-header">
+        <div class="win-sm-avatar" id="win-sm-av">😊</div>
+        <div class="win-sm-name" id="win-sm-name">ゲスト</div>
+      </div>
+      <div class="win-sm-body">
+        <div class="win-sm-left">
+          <div class="win-sm-section">最近使ったもの</div>
+          <div class="win-sm-item" onclick="winToggleStart();winOpenIE()"><span style="font-size:22px">🌐</span><div><span>Internet Explorer</span><span class="win-sm-sub">Webブラウザ</span></div></div>
+          <div class="win-sm-item" onclick="winToggleStart();winOpenNotepad()"><span style="font-size:22px">📄</span><div><span>メモ帳</span><span class="win-sm-sub">テキストエディタ</span></div></div>
+          <div class="win-sm-item" onclick="winToggleStart();winOpenPaint()"><span style="font-size:22px">🎨</span><div><span>ペイント</span><span class="win-sm-sub">画像エディタ</span></div></div>
+          <div class="win-sm-item" onclick="winToggleStart();winOpenCalc()"><span style="font-size:22px">🧮</span><div><span>電卓</span><span class="win-sm-sub">計算機</span></div></div>
+          <div class="win-sm-sep"></div>
+          <div class="win-sm-item" onclick="winToggleStart();winOpenCmd()"><span style="font-size:22px">🖤</span><div><span>コマンドプロンプト</span><span class="win-sm-sub">cmd.exe</span></div></div>
+        </div>
+        <div class="win-sm-right">
+          <div class="win-sm-section">場所</div>
+          <div class="win-sm-item" onclick="winToggleStart();winOpenDocs()"><span style="font-size:22px">📁</span><span>マイドキュメント</span></div>
+          <div class="win-sm-item" onclick="winToggleStart();winOpenMyPC()"><span style="font-size:22px">🖥</span><span>マイコンピュータ</span></div>
+          <div class="win-sm-item" onclick="winToggleStart();winOpenTrash()"><span style="font-size:22px">🗑</span><span>ごみ箱</span></div>
+          <div class="win-sm-sep"></div>
+          <div class="win-sm-section">コントロールパネル</div>
+          <div class="win-sm-item" onclick="winToggleStart();alert('コントロールパネル')"><span style="font-size:22px">⚙️</span><span>コントロールパネル</span></div>
+          <div class="win-sm-item" onclick="winToggleStart();alert('検索')"><span style="font-size:22px">🔍</span><span>検索(S)</span></div>
+          <div class="win-sm-item" onclick="winToggleStart();alert('ヘルプ')"><span style="font-size:22px">❓</span><span>ヘルプとサポート</span></div>
+        </div>
+      </div>
+      <div class="win-sm-footer">
+        <button class="win-sm-foot-btn" onclick="winToggleStart();alert('ログオフ')">🔄 ログオフ</button>
+        <button class="win-sm-foot-btn" onclick="winToggleStart();closeWinVM()">⏻ 終了</button>
+      </div>
+    </div>
+    <!-- Return to UtiloHub -->
+    <button id="win-return-btn" onclick="closeWinVM()">✕ UtiloHubに戻る</button>
   </div>
-  <div class="win-taskbar">
-    <button class="win-start-btn" onclick="winStartMenu()">
-      <svg width="16" height="16" viewBox="0 0 88 88"><rect x="2" y="2" width="38" height="38" fill="#F25022"/><rect x="48" y="2" width="38" height="38" fill="#7FBA00"/><rect x="2" y="48" width="38" height="38" fill="#00A4EF"/><rect x="48" y="48" width="38" height="38" fill="#FFB900"/></svg>
+  <!-- XP Taskbar -->
+  <div id="win-taskbar-xp">
+    <button id="win-start-btn" onclick="winToggleStart()">
+      <svg width="18" height="18" viewBox="0 0 88 88"><rect x="2" y="2" width="38" height="38" fill="#F25022"/><rect x="48" y="2" width="38" height="38" fill="#7FBA00"/><rect x="2" y="48" width="38" height="38" fill="#00A4EF"/><rect x="48" y="48" width="38" height="38" fill="#FFB900"/></svg>
       スタート
     </button>
-    <div id="win-taskbar-items" style="display:flex;gap:4px;flex:1;padding:0 4px"></div>
-    <div class="win-taskbar-clock" id="win-clock"></div>
+    <div id="win-taskbar-btns"></div>
+    <div id="win-tray">
+      <span style="font-size:16px">🔊</span>
+      <span style="font-size:16px">🌐</span>
+      <div id="win-clock-xp"></div>
+    </div>
   </div>
-  <button class="win-close-btn" onclick="closeWinVM()">← UtiloHubに戻る</button>
-  <div id="win-desktop-area" style="position:absolute;inset:40px 0 40px 0"></div>
 </div>
 
 <!-- ══ SETUP WIZARD ══ -->
@@ -398,7 +438,11 @@ window.startVM=function(){
           vm.style.display='none';vm.style.opacity='1';
           if(os==='win'){
             document.getElementById('win-vm').style.display='flex';
-            setInterval(function(){var c=document.getElementById('win-clock');if(c)c.textContent=new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});},1000);
+            var smav=document.getElementById('win-sm-av');var smn=document.getElementById('win-sm-name');
+            var av=localStorage.getItem('uh2_setup_av')||'😊';var nm=localStorage.getItem('uh2_setup_name')||'ゲスト';
+            if(smav)smav.textContent=av;if(smn)smn.textContent=nm;
+            if(window.winInitDesktop)winInitDesktop();
+            setInterval(function(){var c=document.getElementById('win-clock-xp');if(c){var n=new Date();c.innerHTML=n.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})+'<br><span style=\"font-size:10px\">'+n.toLocaleDateString('ja-JP',{month:'2-digit',day:'2-digit'})+'</span>';}},1000);
           } else {
             window.UH&&UH.notify('macOS VM 起動完了','仮想マシンが起動しました','🍎','#0071e3');
           }
@@ -457,6 +501,7 @@ onAuthStateChanged(auth,user=>{
 <script type="module" src="js/core.js"></script>
 <script type="module" src="apps/tools.js"></script>
 <script type="module" src="apps/productivity.js"></script>
+<script type="module" src="apps/windows_vm.js"></script>
 
 <!-- Safari Browser App -->
 <script type="module">
