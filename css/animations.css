@@ -382,3 +382,199 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-sy
 }
 .spotlight-item:hover, .spotlight-item.focused { background: rgba(0,122,255,0.35); }
 .spotlight-item-icon { width: 36px; height: 36px; border-radius: 8px; flex-shrink: 0; object-fit:cover; font-size:24px; display:flex; align-items:center; justify-content:center; }
+
+/* ══════════════════════════════════════
+   WINDOWS XP VM
+══════════════════════════════════════ */
+#win-vm {
+  position:fixed; inset:0; z-index:500;
+  display:none; flex-direction:column;
+  font-family:'Segoe UI',Tahoma,Arial,sans-serif;
+}
+#win-vm-desktop {
+  flex:1; position:relative; overflow:hidden;
+  background: linear-gradient(180deg,#1a6fc4 0%,#3a9bd5 40%,#5bb8f0 100%);
+}
+#win-icon-area {
+  position:absolute; top:8px; left:8px;
+  display:flex; flex-direction:column; gap:4px;
+}
+.win-desk-icon {
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  padding:6px; border-radius:4px; cursor:pointer;
+  width:72px; user-select:none;
+  transition:background .1s;
+}
+.win-desk-icon:hover  { background:rgba(255,255,255,.25); }
+.win-desk-icon.selected { background:rgba(49,106,197,.7); border:1px dotted rgba(255,255,255,.8); }
+.win-desk-icon-img  { font-size:36px; line-height:1; filter:drop-shadow(1px 2px 3px rgba(0,0,0,.5)); }
+.win-desk-icon-label { font-size:11px; color:white; text-align:center; text-shadow:1px 1px 2px #000,0 0 4px rgba(0,0,0,.8); white-space:pre-line; line-height:1.3; }
+
+/* Windows */
+#win-desktop-area { position:absolute; inset:0; overflow:hidden; }
+.win-window {
+  position:absolute; display:flex; flex-direction:column;
+  border:2px solid #0054e3;
+  border-top:3px solid #0054e3;
+  box-shadow:2px 2px 8px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.3);
+  border-radius:8px 8px 0 0;
+  min-width:200px; min-height:100px;
+  overflow:visible;
+}
+.win-window.focused { border-color:#0054e3; }
+.win-window:not(.focused) .win-titlebar { background:linear-gradient(180deg,#9db8d2,#7ba0c0) !important; }
+
+.win-titlebar {
+  height:30px; display:flex; align-items:center; padding:0 6px;
+  background:linear-gradient(180deg,#4d9cf0 0%,#1462d1 50%,#1a75e8 100%);
+  border-radius:6px 6px 0 0; cursor:move; user-select:none; flex-shrink:0;
+}
+.win-tb-left { display:flex; align-items:center; gap:6px; flex:1; min-width:0; }
+.win-tb-icon  { font-size:14px; flex-shrink:0; }
+.win-tb-title { font-size:12px; font-weight:700; color:white; text-shadow:1px 1px 2px rgba(0,0,0,.6); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.win-tb-btns  { display:flex; gap:3px; flex-shrink:0; margin-left:4px; }
+.win-tb-btn {
+  width:21px; height:21px; border-radius:3px; border:1px solid rgba(0,0,0,.4);
+  font-size:11px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  box-shadow:0 1px 0 rgba(255,255,255,.4) inset;
+  transition:filter .08s;
+}
+.win-tb-btn:hover  { filter:brightness(1.2); }
+.win-tb-btn:active { filter:brightness(.9); transform:scale(.95); }
+.win-tb-btn.min { background:linear-gradient(180deg,#ffe680,#e6b800); color:#5a4000; }
+.win-tb-btn.max { background:linear-gradient(180deg,#80ff80,#00a000); color:#003300; }
+.win-tb-btn.cls { background:linear-gradient(180deg,#ff8080,#cc0000); color:white; }
+
+.win-menubar {
+  height:22px; display:flex; align-items:center; padding:0 4px;
+  background:#f0f0f0; border-bottom:1px solid #c0c0c0; flex-shrink:0;
+  font-size:12px; font-family:'Segoe UI',Tahoma,Arial,sans-serif;
+}
+.win-menu-item {
+  padding:2px 8px; cursor:pointer; border-radius:3px;
+  color:#000; user-select:none;
+  transition:background .1s, color .1s;
+}
+.win-menu-item:hover { background:#316ac5; color:white; }
+
+.win-body {
+  flex:1; overflow:auto; background:#fff; border-radius:0;
+  border-top:1px solid #c0c0c0;
+}
+.win-statusbar {
+  height:22px; display:flex; align-items:center; padding:0 8px;
+  background:linear-gradient(180deg,#e0e0e0,#d0d0d0);
+  border-top:1px solid #aaa; font-size:11px; color:#444; flex-shrink:0;
+  font-family:'Segoe UI',Tahoma,sans-serif;
+}
+
+/* Taskbar XP */
+#win-taskbar-xp {
+  height:40px; display:flex; align-items:center; padding:0 0;
+  background:linear-gradient(180deg,#245edb 0%,#1a48b8 45%,#1a54cc 46%,#2468e8 100%);
+  border-top:2px solid #0a2a9a; flex-shrink:0; position:relative; z-index:999;
+}
+#win-start-btn {
+  height:100%; padding:0 12px 0 8px;
+  background:linear-gradient(180deg,#5ec95e 0%,#3aaa3a 45%,#2e9e2e 46%,#4ec44e 100%);
+  border:none; border-right:2px solid #1a8a1a;
+  border-radius:0 14px 14px 0; color:white; font-size:14px; font-weight:700;
+  cursor:pointer; display:flex; align-items:center; gap:6px;
+  font-family:'Franklin Gothic Medium','Arial Narrow',Arial,sans-serif;
+  text-shadow:1px 1px 2px rgba(0,0,0,.5);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.3), 2px 0 4px rgba(0,0,0,.3);
+  transition:filter .1s;
+}
+#win-start-btn:hover  { filter:brightness(1.1); }
+#win-start-btn:active { filter:brightness(.9); }
+#win-start-btn svg { filter:drop-shadow(0 1px 2px rgba(0,0,0,.5)); }
+
+#win-taskbar-btns { display:flex; gap:3px; flex:1; padding:0 6px; overflow:hidden; align-items:center; }
+.win-taskbar-btn {
+  height:28px; padding:0 8px; background:linear-gradient(180deg,#3a7ad4,#2460c0);
+  border:1px solid rgba(255,255,255,.2); border-bottom:1px solid rgba(0,0,0,.3);
+  color:white; font-size:12px; cursor:pointer; border-radius:3px;
+  max-width:150px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  font-family:'Segoe UI',Tahoma,sans-serif; transition:filter .1s;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.2);
+}
+.win-taskbar-btn:hover  { filter:brightness(1.15); }
+.win-taskbar-btn.active { background:linear-gradient(180deg,#1a4a9a,#2460c0); box-shadow:inset 0 2px 4px rgba(0,0,0,.3); }
+
+#win-tray {
+  display:flex; align-items:center; gap:6px; padding:0 8px;
+  background:linear-gradient(180deg,#1248b8,#0a3090);
+  height:100%; border-left:1px solid rgba(255,255,255,.15);
+  font-size:11px; color:rgba(255,255,255,.9); font-family:'Segoe UI',sans-serif;
+}
+#win-clock-xp { text-align:center; line-height:1.4; }
+
+/* Start Menu */
+#win-start-menu {
+  position:absolute; bottom:40px; left:0; z-index:9999;
+  width:340px;
+  background:#fff; border:1px solid #0054e3;
+  border-radius:8px 8px 0 0; overflow:hidden;
+  display:none; flex-direction:column;
+  box-shadow:4px 0 12px rgba(0,0,0,.4);
+  font-family:'Segoe UI',Tahoma,Arial,sans-serif;
+}
+.win-sm-header {
+  background:linear-gradient(90deg,#245edb,#1a48b8);
+  padding:10px 14px; display:flex; align-items:center; gap:12px;
+}
+.win-sm-avatar { width:44px; height:44px; border-radius:4px; background:linear-gradient(135deg,#667eea,#764ba2); display:flex; align-items:center; justify-content:center; font-size:28px; border:2px solid rgba(255,255,255,.5); }
+.win-sm-name   { font-size:14px; font-weight:700; color:white; text-shadow:1px 1px 2px rgba(0,0,0,.5); }
+.win-sm-body   { display:flex; flex:1; }
+.win-sm-left   { width:50%; border-right:1px solid #d0d0d0; }
+.win-sm-right  { width:50%; background:#d8e4f8; }
+.win-sm-section { font-size:10px; font-weight:700; color:#666; padding:6px 12px 2px; text-transform:uppercase; letter-spacing:.5px; }
+.win-sm-item {
+  display:flex; align-items:center; gap:10px; padding:6px 12px;
+  cursor:pointer; font-size:12px; transition:background .1s;
+}
+.win-sm-item:hover { background:#316ac5; color:white; }
+.win-sm-item:hover .win-sm-sub { color:rgba(255,255,255,.7); }
+.win-sm-sub    { font-size:10px; color:#888; display:block; }
+.win-sm-sep    { height:1px; background:linear-gradient(90deg,transparent,#aaa,transparent); margin:4px 0; }
+.win-sm-footer { background:linear-gradient(180deg,#245edb,#1a48b8); display:flex; justify-content:flex-end; padding:4px 8px; gap:4px; }
+.win-sm-foot-btn { background:linear-gradient(180deg,#4a80d4,#2460c0); border:1px solid rgba(255,255,255,.2); color:white; font-size:11px; padding:4px 12px; border-radius:3px; cursor:pointer; font-family:'Segoe UI',sans-serif; }
+.win-sm-foot-btn:hover { filter:brightness(1.15); }
+
+/* Explorer */
+.win-explorer { display:flex; height:100%; }
+.win-exp-sidebar { width:160px; background:linear-gradient(180deg,#d8e4f8,#c5d8f8); border-right:1px solid #aab8d8; padding:8px; flex-shrink:0; font-size:12px; }
+.win-exp-section { font-size:10px; font-weight:700; color:#245edb; padding:8px 0 4px; text-transform:uppercase; letter-spacing:.5px; }
+.win-exp-link { padding:3px 4px; cursor:pointer; color:#00008b; font-size:12px; border-radius:2px; }
+.win-exp-link:hover { background:#316ac5; color:white; }
+.win-exp-main { flex:1; padding:8px; overflow-y:auto; background:#fff; }
+.win-exp-header { font-size:11px; font-weight:700; color:#245edb; padding:4px 0 6px; border-bottom:1px solid #c0c0c0; margin-bottom:8px; }
+.win-file-item { display:flex; flex-direction:column; align-items:center; gap:3px; padding:8px; border-radius:4px; cursor:pointer; width:80px; transition:background .1s; text-align:center; }
+.win-file-item:hover { background:#d8e4f8; }
+.win-fi-icon { font-size:32px; }
+.win-fi-name { font-size:11px; color:#000; line-height:1.3; }
+.win-fi-info { font-size:10px; color:#666; }
+
+/* Calculator */
+.win-calc-btn { background:linear-gradient(180deg,#f0f0f0,#d8d8d8); border:1px solid #808080; border-bottom:2px solid #606060; border-right:2px solid #606060; padding:4px; font-size:13px; cursor:pointer; font-family:'Segoe UI',Tahoma,sans-serif; transition:filter .08s; border-radius:2px; }
+.win-calc-btn:hover  { filter:brightness(1.05); }
+.win-calc-btn:active { border:2px inset #808080; }
+.win-calc-btn.red  { color:#c00; }
+.win-calc-btn.blue { background:linear-gradient(180deg,#e0e8f8,#c0d0e8); color:#00c; }
+
+/* Paint tools */
+.win-tool-btn { width:24px; height:24px; background:linear-gradient(180deg,#f0f0f0,#d0d0d0); border:1px solid #808080; cursor:pointer; border-radius:2px; display:flex; align-items:center; justify-content:center; font-size:13px; padding:0; transition:filter .08s; }
+.win-tool-btn:hover  { filter:brightness(1.1); background:linear-gradient(180deg,#d8e4f8,#c0d0e8); }
+.win-tool-btn:active { border:2px inset #808080; }
+
+/* IE */
+.win-ie-btn { background:linear-gradient(180deg,#f0f0f0,#d8d8d8); border:2px outset #fff; padding:2px 8px; font-size:12px; cursor:pointer; border-radius:2px; }
+.win-ie-btn:hover  { filter:brightness(1.05); }
+.win-ie-btn:active { border:2px inset #aaa; }
+
+/* Dropdown */
+.win-dropdown { position:absolute; z-index:99999; font-family:'Segoe UI',Tahoma,Arial,sans-serif; }
+
+/* Return button */
+#win-return-btn { position:absolute; top:6px; right:8px; z-index:1000; background:linear-gradient(180deg,#ff8080,#cc0000); border:1px solid #800000; color:white; padding:3px 12px; font-size:11px; font-weight:700; border-radius:3px; cursor:pointer; font-family:'Segoe UI',sans-serif; box-shadow:1px 1px 3px rgba(0,0,0,.4); }
+#win-return-btn:hover { filter:brightness(1.1); }
