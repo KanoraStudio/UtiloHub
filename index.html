@@ -476,15 +476,15 @@ window._startV86 = function(status) {
 
   try {
     window._v86inst = new V86({
-      wasm_path:         'https://cdn.jsdelivr.net/npm/v86@latest/build/v86.wasm',
-      memory_size:       256 * 1024 * 1024,
-      vga_memory_size:   8  * 1024 * 1024,
-      screen_container:  wrap,
-      bios:              { url: 'https://cdn.jsdelivr.net/npm/v86@latest/bios/seabios.bin' },
-      vga_bios:          { url: 'https://cdn.jsdelivr.net/npm/v86@latest/bios/vgabios.bin' },
-      cdrom:             { url: 'https://cdn.jsdelivr.net/gh/copy/images@master/kolibri.img' },
-      boot_order:        0x132,
-      autostart:         true,
+      wasm_path:        'https://cdn.jsdelivr.net/npm/v86@latest/build/v86.wasm',
+      memory_size:      256 * 1024 * 1024,
+      vga_memory_size:  8   * 1024 * 1024,
+      screen_container: wrap,
+      bios:             { url: 'https://cdn.jsdelivr.net/npm/v86@latest/bios/seabios.bin' },
+      vga_bios:         { url: 'https://cdn.jsdelivr.net/npm/v86@latest/bios/vgabios.bin' },
+      fda:              { url: 'https://copy.sh/v86/images/kolibri.img' },
+      boot_order:       0x1,
+      autostart:        true,
     });
 
     window._v86inst.add_listener('emulator-ready', function() {
