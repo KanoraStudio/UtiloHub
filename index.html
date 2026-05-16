@@ -46,7 +46,6 @@
 
     /* ── Windows VM Desktop ── */
   </style>
-<script src="apps/windows_vm.js"></script>
 </head>
 <body>
 
@@ -368,9 +367,9 @@ window._vmBoot = function(os) {
   requestAnimationFrame(function(){ vb.style.opacity='1'; });
 
   document.getElementById('vmb-icon').innerHTML = '<svg width="56" height="56" viewBox="0 0 88 88"><rect x="2" y="2" width="38" height="38" rx="4" fill="#F25022"/><rect x="48" y="2" width="38" height="38" rx="4" fill="#7FBA00"/><rect x="2" y="48" width="38" height="38" rx="4" fill="#00A4EF"/><rect x="48" y="48" width="38" height="38" rx="4" fill="#FFB900"/></svg>';
-  document.getElementById('vmb-label').textContent = 'Windows XP Professional を起動しています';
-  document.getElementById('vmb-sub').textContent   = '仮想マシンを初期化しています...';
-  document.getElementById('vmb-title').textContent  = 'UtiloHub Virtualization — Windows XP';
+  document.getElementById('vmb-label').textContent = 'KolibriOS を起動しています';
+  document.getElementById('vmb-sub').textContent   = 'x86エミュレータ (WebAssembly) を初期化しています...';
+  document.getElementById('vmb-title').textContent  = 'UtiloHub Virtualization — Real OS Boot';
   document.getElementById('vmb-bar').style.background = 'linear-gradient(90deg,#0078d4,#00bcf2)';
 
   var logEl = document.getElementById('vmb-log');
@@ -379,26 +378,26 @@ window._vmBoot = function(os) {
   logEl.innerHTML = '';
 
   var logs = [
-    'BIOS v2.0 - UtiloHub Virtual Machine',
-    'CPU: Intel Pentium 4  2.40GHz',
-    'Memory test: 1024MB OK',
-    'IDE controller: initialized',
-    'PCI bus: 4 devices found',
-    'Loading NTLDR...',
-    'Windows is loading files...',
-    'NTFS volume: C:\ mounted OK',
-    'hal.dll: loaded',
-    'kernel32.dll: initialized',
-    'Loading device drivers...',
-    'Starting Windows services...',
-    'Applying your personal settings...',
-    'Loading desktop environment...',
-    'Windows XP is ready.'
+    'Initializing WebAssembly JIT compiler...',
+    'v86 x86 emulator loaded',
+    'Allocating virtual memory: 256MB',
+    'Loading BIOS firmware...',
+    'Loading VGA BIOS...',
+    'Fetching KolibriOS disk image...',
+    'x86 CPU initialized (Pentium 4 mode)',
+    'IDE controller: ready',
+    'VGA: 640x480 mode set',
+    'BIOS POST complete',
+    'Loading bootloader...',
+    'KolibriOS kernel loading...',
+    'Initializing GUI environment...',
+    'Starting desktop...',
+    'KolibriOS ready.'
   ];
 
   var pct = 0, li = 0;
   var iv = setInterval(function() {
-    pct += Math.random() * 5 + 2;
+    pct += Math.random() * 6 + 2;
     if(pct > 98) pct = 98;
     bar.style.width = pct + '%';
     pctEl.textContent = Math.floor(pct) + '%';
@@ -406,9 +405,9 @@ window._vmBoot = function(os) {
     if(li < logs.length) {
       var line = document.createElement('div');
       line.textContent = logs[li++];
-      line.style.cssText = 'opacity:0;transition:opacity .2s';
+      line.style.cssText = 'opacity:0;transition:opacity .2s;color:#aaffaa';
       logEl.appendChild(line);
-      setTimeout(function(l){ l.style.opacity='1'; }(line), 30);
+      requestAnimationFrame(function(){ line.style.opacity='1'; });
       logEl.scrollTop = logEl.scrollHeight;
     }
 
@@ -419,18 +418,98 @@ window._vmBoot = function(os) {
         vb.style.opacity = '0';
         setTimeout(function() {
           vb.style.display = 'none';
-          // Windows XP デスクトップを起動
-          if(typeof launchWindowsVM === 'function') {
-            launchWindowsVM();
-          } else {
-            console.error('launchWindowsVM not found');
-            alert('Windows XP VMの読み込みに失敗しました。ページを再読み込みしてください。');
-          }
+          launchRealOS();
         }, 400);
       }, 800);
     }
-  }, 200);
+  }, 220);
 };
+
+window.launchRealOS = function() {
+  var c = document.getElementById('v86-container');
+  if(!c) return;
+  c.style.display = 'flex';
+
+  var status = document.getElementById('v86-status');
+
+  // v86が既にロード済みか確認
+  if(typeof V86 !== 'undefined') {
+    _startV86(status);
+    return;
+  }
+
+  // libv86.jsを動的ロード
+  status.textContent = 'v86エンジンを読み込み中...';
+  var s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/v86@latest/build/libv86.js';
+  s.onload = function() { _startV86(status); };
+  s.onerror = function() {
+    // フォールバック: 別CDN
+    var s2 = document.createElement('script');
+    s2.src = 'https://unpkg.com/v86@latest/build/libv86.js';
+    s2.onload = function() { _startV86(status); };
+    s2.onerror = function() {
+      status.textContent = '読み込み失敗 — ネットワークを確認してください';
+    };
+    document.head.appendChild(s2);
+  };
+  document.head.appendChild(s);
+};
+
+window._v86inst = null;
+window._startV86 = function(status) {
+  status.textContent = 'KolibriOSを起動中...';
+
+  // 既存インスタンスを破棄
+  if(window._v86inst) {
+    try { window._v86inst.destroy(); } catch(e){}
+    window._v86inst = null;
+  }
+
+  // スクリーンコンテナをクリア
+  var wrap = document.getElementById('v86-screen-container');
+  wrap.innerHTML = '';
+
+  // 画面サイズ計算
+  var cw = document.getElementById('v86-screen-wrap').clientWidth;
+  var ch = document.getElementById('v86-screen-wrap').clientHeight;
+
+  try {
+    window._v86inst = new V86({
+      wasm_path:         'https://cdn.jsdelivr.net/npm/v86@latest/build/v86.wasm',
+      memory_size:       256 * 1024 * 1024,
+      vga_memory_size:   8  * 1024 * 1024,
+      screen_container:  wrap,
+      bios:              { url: 'https://cdn.jsdelivr.net/npm/v86@latest/bios/seabios.bin' },
+      vga_bios:          { url: 'https://cdn.jsdelivr.net/npm/v86@latest/bios/vgabios.bin' },
+      cdrom:             { url: 'https://cdn.jsdelivr.net/gh/copy/images@master/kolibri.img' },
+      boot_order:        0x132,
+      autostart:         true,
+    });
+
+    window._v86inst.add_listener('emulator-ready', function() {
+      status.textContent = '動作中 — KolibriOS';
+    });
+
+    window._v86inst.add_listener('emulator-started', function() {
+      status.textContent = 'KolibriOS 起動中...';
+    });
+
+  } catch(e) {
+    status.textContent = 'エラー: ' + e.message;
+    console.error('[v86]', e);
+  }
+};
+
+window.closeRealOS = function() {
+  var c = document.getElementById('v86-container');
+  if(c) c.style.display = 'none';
+  // エミュレータを一時停止（破棄しない）
+  if(window._v86inst) {
+    try { window._v86inst.stop(); } catch(e){}
+  }
+};
+
 
 // Boot progress
 (function(){
@@ -673,5 +752,28 @@ resize();window.addEventListener('resize',resize);
 (function draw(){cx.clearRect(0,0,cv.width,cv.height);pts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>cv.width)p.vx*=-1;if(p.y<0||p.y>cv.height)p.vy*=-1;cx.beginPath();cx.arc(p.x,p.y,p.r,0,Math.PI*2);cx.fillStyle='hsla('+p.h+',70%,65%,'+p.o+')';cx.fill();});cx.strokeStyle='rgba(167,139,250,.06)';cx.lineWidth=.6;for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y;if(dx*dx+dy*dy<130*130){cx.beginPath();cx.moveTo(pts[i].x,pts[i].y);cx.lineTo(pts[j].x,pts[j].y);cx.stroke();}}requestAnimationFrame(draw);})();
 setInterval(()=>{const c=document.getElementById('mb-clock');if(c)c.textContent=new Date().toLocaleString('ja-JP',{month:'short',day:'numeric',weekday:'short',hour:'2-digit',minute:'2-digit'});},1000);
 </script>
+<!-- ══ V86 REAL OS CONTAINER ══ -->
+<div id="v86-container" style="position:fixed;inset:0;z-index:99999;background:#000;display:none;flex-direction:column;font-family:monospace">
+  <!-- タイトルバー -->
+  <div style="height:36px;background:#1a1a1a;border-bottom:1px solid #333;display:flex;align-items:center;padding:0 16px;gap:12px;flex-shrink:0">
+    <div style="display:flex;gap:7px">
+      <div onclick="closeRealOS()" style="width:13px;height:13px;border-radius:50%;background:#ff5f57;cursor:pointer" title="閉じる"></div>
+      <div style="width:13px;height:13px;border-radius:50%;background:#febc2e"></div>
+      <div style="width:13px;height:13px;border-radius:50%;background:#28c840"></div>
+    </div>
+    <div style="flex:1;text-align:center;font-size:12px;color:rgba(255,255,255,.4)">UtiloHub Virtualization — KolibriOS (x86 Real Hardware Emulation)</div>
+    <button onclick="closeRealOS()" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:white;padding:3px 12px;border-radius:5px;font-size:11px;cursor:pointer">UtiloHubに戻る</button>
+  </div>
+  <!-- v86描画エリア -->
+  <div id="v86-screen-wrap" style="flex:1;display:flex;align-items:center;justify-content:center;background:#000;overflow:hidden">
+    <div id="v86-screen-container" style="position:relative"></div>
+  </div>
+  <!-- ステータスバー -->
+  <div style="height:24px;background:#111;border-top:1px solid #222;display:flex;align-items:center;padding:0 12px;gap:16px">
+    <span id="v86-status" style="font-size:11px;color:rgba(255,255,255,.5)">起動中...</span>
+    <span style="font-size:11px;color:rgba(255,255,255,.3)">KolibriOS v8.0 — x86 Emulation</span>
+    <span style="margin-left:auto;font-size:11px;color:rgba(255,255,255,.3)">Powered by v86 (WebAssembly)</span>
+  </div>
+</div>
 </body>
 </html>
